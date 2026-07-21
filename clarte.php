@@ -13,10 +13,19 @@
  *   --no-cache            Ignore le cache et reanalyse tout
  *   --ci                  Mode CI/CD : code de sortie non nul si des
  *                         problemes critiques sont detectes
+ *   --diff                 Analyse uniquement les fichiers modifies (indexes,
+ *                         non indexes, ou nouveaux) par rapport a HEAD.
+ *                         Necessite que <chemin_du_projet> soit un depot Git ;
+ *                         a defaut, analyse complete effectuee avec un avertissement.
+ *   --diff=<ref>            Analyse uniquement les fichiers qui different entre
+ *                         <ref> (ex: main, origin/main) et HEAD. Utile en CI
+ *                         pour analyser uniquement les changements d'une PR.
  *   --config=chemin.php   Utilise un fichier de configuration alternatif
  *
  * Exemple :
  *   GITHUB_MODELS_TOKEN=xxxx php clarte.php /var/www/mon-projet --ai --ci
+ *   php clarte.php /var/www/mon-projet --diff              # avant un commit
+ *   php clarte.php /var/www/mon-projet --diff=origin/main --ci   # en CI sur une PR
  */
 
 require __DIR__ . '/vendor/autoload.php'; // genere par `composer install` (autoload PSR-4)
@@ -31,6 +40,8 @@ $projectPath = null;
 $useAi = false;
 $noCache = false;
 $ciMode = false;
+$diffOnly = false;
+$diffBase = null;
 $configPath = __DIR__ . '/config.php';
 
 foreach ($args as $arg) {
@@ -40,6 +51,11 @@ foreach ($args as $arg) {
         $noCache = true;
     } elseif ($arg === '--ci') {
         $ciMode = true;
+    } elseif ($arg === '--diff') {
+        $diffOnly = true;
+    } elseif (str_starts_with($arg, '--diff=')) {
+        $diffOnly = true;
+        $diffBase = substr($arg, 7);
     } elseif (str_starts_with($arg, '--config=')) {
         $configPath = substr($arg, 9);
     } elseif (!str_starts_with($arg, '--')) {
@@ -48,7 +64,7 @@ foreach ($args as $arg) {
 }
 
 if ($projectPath === null || !is_dir($projectPath)) {
-    fwrite(STDERR, "Usage : php clarte.php <chemin_du_projet> [--ai] [--no-cache] [--ci] [--config=chemin.php]\n");
+    fwrite(STDERR, "Usage : php clarte.php <chemin_du_projet> [--ai] [--no-cache] [--ci] [--diff | --diff=<ref>] [--config=chemin.php]\n");
     exit(1);
 }
 
@@ -60,12 +76,15 @@ if ($noCache) {
 }
 
 $engine = new AnalysisEngine($config);
-$result = $engine->run($config['project_path'], $useAi);
+$result = $engine->run($config['project_path'], $useAi, $diffOnly, $diffBase);
 
 echo PHP_EOL;
 echo "========================================" . PHP_EOL;
 echo " Analyse terminee" . PHP_EOL;
 echo "========================================" . PHP_EOL;
+if ($result['summary']['partial_analysis']['active'] ?? false) {
+    echo " Mode              : --diff (analyse partielle)" . PHP_EOL;
+}
 echo " Score global      : {$result['summary']['global_score']}/100" . PHP_EOL;
 echo " Fichiers analyses : {$result['statistics']['total_files']}" . PHP_EOL;
 echo " Alertes critiques : {$result['summary']['issues_by_severity']['critical']}" . PHP_EOL;

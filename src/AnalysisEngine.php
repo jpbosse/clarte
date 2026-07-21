@@ -22,6 +22,7 @@ class AnalysisEngine
     private QualityAnalyzer $qualityAnalyzer;
     private DocumentationAnalyzer $documentationAnalyzer;
     private DependencyAnalyzer $dependencyAnalyzer;
+    private GitDiffResolver $gitDiffResolver;
     private Statistics $statistics;
     private PromptBuilder $promptBuilder;
     private GithubModel $aiModel;
@@ -48,6 +49,7 @@ class AnalysisEngine
         $this->qualityAnalyzer = new QualityAnalyzer();
         $this->documentationAnalyzer = new DocumentationAnalyzer();
         $this->dependencyAnalyzer = new DependencyAnalyzer($config['dependencies'] ?? [], $config['cache']['path']);
+        $this->gitDiffResolver = new GitDiffResolver();
         $this->statistics = new Statistics();
         $this->promptBuilder = new PromptBuilder();
         $this->aiModel = new GithubModel($config['ai'], $this->logger);
@@ -58,11 +60,34 @@ class AnalysisEngine
         $this->exporter = new Exporter();
     }
 
-    public function run(string $projectPath, bool $useAi = false): array
+    public function run(string $projectPath, bool $useAi = false, bool $diffOnly = false, ?string $diffBase = null): array
     {
         $this->logger->startStep('Scan du projet');
         $files = $this->scanner->scan($projectPath);
         $this->logger->endStep('Scan du projet');
+
+        $isPartial = false;
+        $partialInfo = ['active' => false];
+
+        if ($diffOnly) {
+            $changed = $this->gitDiffResolver->changedFiles($projectPath, $diffBase);
+            if ($changed === null) {
+                $this->logger->warning(
+                    "Mode --diff demande mais impossible de determiner les fichiers modifies "
+                    . "(projet hors depot Git, Git absent, ou reference invalide) : analyse complete effectuee a la place."
+                );
+            } else {
+                $changedSet = array_flip($changed);
+                $files = array_values(array_filter($files, fn($f) => isset($changedSet[$f['relative']])));
+                $isPartial = true;
+                $partialInfo = ['active' => true, 'base' => $diffBase, 'files_analyzed' => count($files)];
+                $this->logger->info(sprintf(
+                    'Mode --diff actif (%s) : %d fichier(s) modifie(s) retenus pour analyse.',
+                    $diffBase ? "vs {$diffBase}" : 'working tree',
+                    count($files)
+                ));
+            }
+        }
 
         $progress = new ProgressBar(count($files), 'Analyse');
         $fileResults = [];
@@ -78,13 +103,19 @@ class AnalysisEngine
         $statistics = $this->statistics->build($files, $fileResults, $projectPath);
         $dependencyResult = $this->dependencyAnalyzer->analyze($projectPath);
         $summary = $this->summaryBuilder->build($fileResults, $statistics, $dependencyResult);
+        $summary['partial_analysis'] = $partialInfo;
 
-        $previousSnapshot = $this->history->getPrevious();
-        $this->history->save($summary, $fileResults);
-        $comparison = $this->history->compare(
-            ['global_score' => $summary['global_score'], 'total_issues' => $summary['total_issues'], 'issues_by_file' => array_map(fn($r) => $this->countIssues($r), $fileResults)],
-            $previousSnapshot
-        );
+        $comparison = null;
+        if (!$isPartial) {
+            $previousSnapshot = $this->history->getPrevious();
+            $this->history->save($summary, $fileResults);
+            $comparison = $this->history->compare(
+                ['global_score' => $summary['global_score'], 'total_issues' => $summary['total_issues'], 'issues_by_file' => array_map(fn($r) => $this->countIssues($r), $fileResults)],
+                $previousSnapshot
+            );
+        } else {
+            $this->logger->info("Mode --diff : historique non mis a jour (score partiel, non comparable a une analyse complete).");
+        }
 
         $graphs = [
             'languages' => $this->graphBuilder->languageDistribution($statistics),

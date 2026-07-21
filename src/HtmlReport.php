@@ -34,6 +34,7 @@ class HtmlReport
         $prioritiesHtml = $this->renderPriorities($summary['top_priorities']);
         $hotFilesHtml = $this->renderHotFiles($summary['hot_files']);
         $comparisonHtml = $comparison ? $this->renderComparison($comparison) : '';
+        $partialBannerHtml = ($summary['partial_analysis']['active'] ?? false) ? $this->renderPartialBanner($summary['partial_analysis']) : '';
 
         return <<<HTML
 <!DOCTYPE html>
@@ -82,6 +83,7 @@ class HtmlReport
 
     <section id="dashboard" class="panel active">
       <h1>Tableau de bord</h1>
+      {$partialBannerHtml}
       <p class="narrative">{$summary['narrative']}</p>
       <div class="cards-grid">
         {$dashboardCards}
@@ -319,6 +321,26 @@ HTML;
         return $html;
     }
 
+    private function renderPartialBanner(array $partial): string
+    {
+        $base = $partial['base'] ?? null;
+        $baseLabel = $base ? "par rapport a <code>{$this->esc($base)}</code>" : "non commites (working tree)";
+        $count = $partial['files_analyzed'] ?? 0;
+
+        return <<<HTML
+<div class="partial-banner">
+  ⚠️ <strong>Analyse partielle (mode --diff)</strong> — seuls les {$count} fichier(s) modifie(s) {$baseLabel} ont ete analyses.
+  Le score global et les statistiques ci-dessous ne portent donc que sur ce sous-ensemble, pas sur l'ensemble du projet.
+  L'historique n'a pas ete mis a jour pour cette execution.
+</div>
+HTML;
+    }
+
+    private function esc(string $s): string
+    {
+        return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+    }
+
     private function renderComparison(array $comparison): string
     {
         $scoreDiff = $comparison['score_diff'];
@@ -426,6 +448,8 @@ canvas { max-width: 100%; }
 .hot-files-table th, .hot-files-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 
 .comparison-box { margin-top: 20px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
+.partial-banner { margin-bottom: 16px; padding: 14px 16px; background: rgba(234, 179, 8, 0.12); border: 1px solid #eab308; border-radius: var(--radius); color: var(--text); }
+.partial-banner code { background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 4px; }
 
 table.stat-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
 table.stat-table th, table.stat-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
