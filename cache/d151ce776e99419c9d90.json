@@ -1,1 +1,0 @@
-{"lang":"PHP","lines":47,"size":1191,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":6.7},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode label() sans bloc PHPDoc","line":17}]},"ai":null}

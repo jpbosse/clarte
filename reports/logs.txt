@@ -1,9 +1,0 @@
-[2026-07-20 17:58:36] [INFO] === Nouvelle analyse demarree ===
-[2026-07-20 17:58:36] [INFO] Debut de l'etape : Scan du projet
-[2026-07-20 17:58:36] [INFO] Scan termine : 732 fichiers retenus dans /var/www/pladigit
-[2026-07-20 17:58:36] [INFO] Fin de l'etape : Scan du projet (0.01s)
-[2026-07-20 17:58:36] [INFO] Debut de l'etape : Analyse des fichiers
-[2026-07-20 17:58:36] [INFO] Fin de l'etape : Analyse des fichiers (0.53s)
-[2026-07-20 17:58:36] [INFO] Debut de l'etape : Generation des rapports
-[2026-07-20 17:58:36] [INFO] Fin de l'etape : Generation des rapports (0.01s)
-[2026-07-20 17:58:36] [INFO] Analyse terminee : 732 fichiers, score global 92/100, 0 appels IA (0 tokens estimes)

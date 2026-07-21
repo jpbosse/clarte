@@ -1,1 +1,0 @@
-{"lang":"PHP","lines":29,"size":784,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":0},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode run() sans bloc PHPDoc","line":20}]},"ai":null}

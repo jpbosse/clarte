@@ -1,0 +1,17 @@
+# Cache incremental (genere a chaque analyse, propre a chaque machine)
+/cache/*
+!/cache/.gitkeep
+
+# Rapports generes (contenu specifique au projet analyse, pas au code de l'outil)
+/reports/*
+!/reports/.gitkeep
+!/reports/history/
+/reports/history/*
+!/reports/history/.gitkeep
+
+# Config locale eventuelle (surcharge non versionnee)
+config.local.php
+
+# Divers
+.DS_Store
+*.log

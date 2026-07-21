@@ -1,1 +1,0 @@
-{"lang":"PHP","lines":58,"size":1292,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":9,"documentation":10},"issues":{"security":[],"performance":[],"architecture":[],"quality":[{"severity":"moderate","message":"Ligne dupliquee 5 fois (lignes 15, 21, 27, 32, 49) : 'provider' => 'tenant_users',...","line":15}],"documentation":[]},"ai":null}

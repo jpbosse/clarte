@@ -1,1 +1,0 @@
-{"lang":"PHP","lines":17,"size":243,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":0},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode test_that_true_is_true() sans bloc PHPDoc","line":12}]},"ai":null}

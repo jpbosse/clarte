@@ -1,1 +1,0 @@
-{"lang":"PHP","lines":130,"size":3991,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":9,"documentation":10},"issues":{"security":[],"performance":[],"architecture":[],"quality":[{"severity":"moderate","message":"Ligne dupliquee 12 fois (lignes 12, 21, 30, 45, 54) : ->onFailure(function () {...","line":12}],"documentation":[]},"ai":null}
