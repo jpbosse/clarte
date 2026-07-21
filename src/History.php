@@ -20,7 +20,7 @@ class History
         $this->keepLast = $keepLast;
 
         if ($this->enabled && !is_dir($this->path)) {
-            mkdir($this->path, 0777, true);
+            @mkdir($this->path, 0777, true);
         }
     }
 
@@ -43,7 +43,7 @@ class History
         ];
 
         $filename = $this->path . '/' . date('Y-m-d_His') . '.json';
-        file_put_contents($filename, json_encode($snapshot, JSON_PRETTY_PRINT));
+        @file_put_contents($filename, json_encode($snapshot, JSON_PRETTY_PRINT));
         $this->pruneOldEntries();
 
         return $filename;

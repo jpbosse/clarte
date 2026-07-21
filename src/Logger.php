@@ -18,7 +18,7 @@ class Logger
 
         $dir = dirname($logFile);
         if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
+            @mkdir($dir, 0777, true);
         }
 
         $this->write('=== Nouvelle analyse demarree ===', 'INFO');
@@ -61,7 +61,7 @@ class Logger
     private function write(string $message, string $level): void
     {
         $line = sprintf('[%s] [%s] %s', date('Y-m-d H:i:s'), $level, $message);
-        file_put_contents($this->logFile, $line . PHP_EOL, FILE_APPEND);
+        @file_put_contents($this->logFile, $line . PHP_EOL, FILE_APPEND);
 
         if ($this->echoToConsole && PHP_SAPI === 'cli') {
             $colors = [

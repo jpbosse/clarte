@@ -4,16 +4,22 @@ namespace Clarte;
 
 /**
  * Export des resultats dans differents formats (JSON, Markdown, CSV).
- * L'export PDF n'est pas inclus en v1 : voir README (roadmap v2) pour
- * l'approche recommandee (rendu HTML -> PDF via un moteur externe,
- * volontairement laisse hors scope pour garder l'outil sans dependance
- * lourde par defaut).
  */
 class Exporter
 {
+    private ?Logger $logger;
+
+    public function __construct(?Logger $logger = null)
+    {
+        $this->logger = $logger;
+    }
+
     public function exportJson(array $data, string $path): void
     {
-        file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $result = @file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if ($result === false) {
+            $this->warn("Export JSON impossible (permissions ou espace disque) : {$path}");
+        }
     }
 
     public function exportMarkdown(array $summary, array $statistics, array $fileResults, string $projectName, string $path): void
@@ -47,12 +53,20 @@ class Exporter
             $lines[] = "- [{$issue['severity']}] {$issue['file']}:{$issue['line']} — {$issue['message']}";
         }
 
-        file_put_contents($path, implode("\n", $lines));
+        $result = @file_put_contents($path, implode("\n", $lines));
+        if ($result === false) {
+            $this->warn("Export Markdown impossible (permissions ou espace disque) : {$path}");
+        }
     }
 
     public function exportCsv(array $statistics, string $path): void
     {
-        $fh = fopen($path, 'w');
+        $fh = @fopen($path, 'w');
+        if ($fh === false) {
+            $this->warn("Export CSV impossible, ouverture du fichier refusee (permissions ou espace disque) : {$path}");
+            return;
+        }
+
         fputcsv($fh, ['Metrique', 'Valeur']);
         fputcsv($fh, ['Fichiers', $statistics['total_files']]);
         fputcsv($fh, ['Dossiers', $statistics['total_folders']]);
@@ -64,5 +78,14 @@ class Exporter
             fputcsv($fh, [$lang, $count]);
         }
         fclose($fh);
+    }
+
+    private function warn(string $message): void
+    {
+        if ($this->logger !== null) {
+            $this->logger->warning($message);
+        } else {
+            @trigger_error($message, E_USER_WARNING);
+        }
     }
 }

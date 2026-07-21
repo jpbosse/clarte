@@ -23,7 +23,7 @@ class Cache
 
         if ($this->enabled) {
             if (!is_dir($this->path)) {
-                mkdir($this->path, 0777, true);
+                @mkdir($this->path, 0777, true);
             }
             $this->loadIndex();
         }

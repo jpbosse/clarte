@@ -76,7 +76,7 @@ class AnalysisEngine
         $this->history = new History($config['history']['path'], $config['history']['enabled'], $config['history']['keep_last']);
         $this->graphBuilder = new GraphBuilder();
         $this->htmlReport = new HtmlReport();
-        $this->exporter = new Exporter();
+        $this->exporter = new Exporter($this->logger);
         $this->pdfExporter = new PdfExporter($this->logger);
     }
 
@@ -146,8 +146,8 @@ class AnalysisEngine
 
         $projectName = basename(rtrim($projectPath, '/'));
         $outputDir = $this->config['output']['dir'];
-        if (!is_dir($outputDir)) {
-            mkdir($outputDir, 0777, true);
+        if (!is_dir($outputDir) && !@mkdir($outputDir, 0777, true) && !is_dir($outputDir)) {
+            $this->logger->warning("Impossible de creer le dossier de sortie (permissions ou espace disque) : {$outputDir}. Aucun rapport ne pourra etre ecrit.");
         }
 
         $this->logger->startStep('Generation des rapports');
@@ -155,10 +155,13 @@ class AnalysisEngine
         $pdfResult = null;
         if ($this->config['output']['html']) {
             $html = $this->htmlReport->render($statistics, $summary, $fileResults, $dependencyResult, $comparison, $graphs, $projectName);
-            file_put_contents($outputDir . '/rapport.html', $html);
+            $htmlPath = $outputDir . '/rapport.html';
+            if (@file_put_contents($htmlPath, $html) === false) {
+                $this->logger->warning("Ecriture du rapport HTML impossible (permissions ou espace disque) : {$htmlPath}");
+            }
 
-            if ($this->config['output']['pdf'] ?? false) {
-                $pdfResult = $this->pdfExporter->export($outputDir . '/rapport.html', $outputDir . '/rapport.pdf');
+            if (($this->config['output']['pdf'] ?? false) && is_file($htmlPath)) {
+                $pdfResult = $this->pdfExporter->export($htmlPath, $outputDir . '/rapport.pdf');
             }
         }
         if ($this->config['output']['json']) {
