@@ -80,6 +80,15 @@ return [
     ],
 
     // ------------------------------------------------------------------
+    // Analyse des dependances : vulnerabilites reelles via OSV.dev
+    // ------------------------------------------------------------------
+    'dependencies' => [
+        'osv_enabled'          => true, // interroge https://api.osv.dev (necessite un acces reseau sortant)
+        'osv_timeout_seconds'  => 5,    // en cas de reseau absent/lent, le scan est ignore sans bloquer l'analyse
+        'osv_cache_ttl_hours'  => 24,   // duree de mise en cache des details d'une vulnerabilite deja vue
+    ],
+
+    // ------------------------------------------------------------------
     // Cache / reprise apres interruption
     // ------------------------------------------------------------------
     'cache' => [

@@ -5,14 +5,10 @@ namespace Clarte;
 /**
  * Analyse des dependances declarees (composer.json / package.json).
  *
- * Limite assumee (v1) : sans connexion a une base de vulnerabilites en
- * ligne (OSV.dev, GitHub Advisory Database...), l'outil ne peut PAS
- * affirmer qu'une version est vulnerable. Il se contente donc de :
- *   - lister les dependances et leurs contraintes de version,
- *   - signaler les contraintes trop larges ("*", pas de borne),
- *   - signaler les paquets connus pour necessiter une vigilance particuliere.
- * Le branchement sur une base de vulnerabilites reelle est documente en
- * roadmap v2 (voir README).
+ * Depuis v1.1 : interroge reellement OSV.dev (base de vulnerabilites
+ * publiques, alimentee entre autres par les GitHub Security Advisories)
+ * via VulnerabilityScanner, en plus des heuristiques locales (contraintes
+ * de version trop larges, paquets sensibles a surveiller).
  */
 class DependencyAnalyzer
 {
@@ -20,6 +16,13 @@ class DependencyAnalyzer
         'laravel/framework', 'symfony/symfony', 'guzzlehttp/guzzle',
         'lodash', 'express', 'axios', 'jquery',
     ];
+
+    private VulnerabilityScanner $scanner;
+
+    public function __construct(array $config, string $cacheBaseDir)
+    {
+        $this->scanner = new VulnerabilityScanner($config, $cacheBaseDir);
+    }
 
     public function analyze(string $projectPath): array
     {
@@ -34,28 +37,30 @@ class DependencyAnalyzer
     {
         $file = rtrim($projectPath, '/') . '/composer.json';
         if (!is_file($file)) {
-            return ['found' => false, 'packages' => [], 'warnings' => []];
+            return ['found' => false, 'packages' => [], 'warnings' => [], 'osv' => ['scanned' => false, 'skipped_reason' => null, 'findings' => []]];
         }
 
         $data = json_decode(file_get_contents($file), true) ?: [];
         $packages = array_merge($data['require'] ?? [], $data['require-dev'] ?? []);
         $warnings = $this->buildWarnings($packages);
+        $osv = $this->scanner->scan($packages, 'composer', $projectPath);
 
-        return ['found' => true, 'packages' => $packages, 'warnings' => $warnings];
+        return ['found' => true, 'packages' => $packages, 'warnings' => $warnings, 'osv' => $osv];
     }
 
     private function analyzeNpm(string $projectPath): array
     {
         $file = rtrim($projectPath, '/') . '/package.json';
         if (!is_file($file)) {
-            return ['found' => false, 'packages' => [], 'warnings' => []];
+            return ['found' => false, 'packages' => [], 'warnings' => [], 'osv' => ['scanned' => false, 'skipped_reason' => null, 'findings' => []]];
         }
 
         $data = json_decode(file_get_contents($file), true) ?: [];
         $packages = array_merge($data['dependencies'] ?? [], $data['devDependencies'] ?? []);
         $warnings = $this->buildWarnings($packages);
+        $osv = $this->scanner->scan($packages, 'npm', $projectPath);
 
-        return ['found' => true, 'packages' => $packages, 'warnings' => $warnings];
+        return ['found' => true, 'packages' => $packages, 'warnings' => $warnings, 'osv' => $osv];
     }
 
     private function buildWarnings(array $packages): array

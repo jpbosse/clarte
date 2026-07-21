@@ -790,13 +790,30 @@ function renderCategory(sectionKey, containerId) {
 function renderDependencies() {
   const d = REPORT_DATA.dependencies;
   const container = document.getElementById('dependances-content');
+  function osvBlock(osv) {
+    if (!osv) return '';
+    if (!osv.scanned) {
+      return osv.skipped_reason
+        ? `<p class="issue-line">🔵 Scan CVE (OSV.dev) non effectue : ${esc(osv.skipped_reason)}</p>`
+        : '';
+    }
+    if (!osv.findings.length) {
+      return `<p class="issue-line">🟢 Aucune vulnerabilite connue trouvee sur OSV.dev pour ces paquets.</p>`;
+    }
+    return `<h3>Vulnerabilites connues (OSV.dev)</h3>` + osv.findings.map(f => {
+      const approx = f.approximate ? ' <em>(version approximative, verifier manuellement)</em>' : '';
+      const vulns = f.vulns.map(v => `<div class="issue-line">🔴 <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.id)}</a> — ${esc(v.summary)} (severite : ${esc(String(v.severity))})</div>`).join('');
+      return `<p><strong>${esc(f.package)}</strong> @ ${esc(f.version)}${approx}</p>${vulns}`;
+    }).join('');
+  }
   function block(title, data) {
     if (!data.found) return `<h2>${esc(title)}</h2><p>Aucun fichier de dependances trouve.</p>`;
     const pkgRows = Object.entries(data.packages).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
     const warnRows = data.warnings.map(w => `<div class="issue-line">${esc(w.severity)} — ${esc(w.message)}</div>`).join('');
     return `<h2>${esc(title)}</h2>
       <table class="stat-table"><thead><tr><th>Paquet</th><th>Version</th></tr></thead><tbody>${pkgRows}</tbody></table>
-      ${warnRows}`;
+      ${warnRows}
+      ${osvBlock(data.osv)}`;
   }
   container.innerHTML = block('Composer (PHP)', d.composer) + block('npm (JS)', d.npm);
 }

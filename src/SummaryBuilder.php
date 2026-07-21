@@ -127,6 +127,19 @@ class SummaryBuilder
             'ok'    => count(array_filter($looseDeps, fn($w) => $w['severity'] === 'moderate')) === 0,
         ];
 
+        $osvFindings = array_merge(
+            $dependencyResult['composer']['osv']['findings'] ?? [],
+            $dependencyResult['npm']['osv']['findings'] ?? []
+        );
+        $osvScanned = ($dependencyResult['composer']['osv']['scanned'] ?? false)
+            || ($dependencyResult['npm']['osv']['scanned'] ?? false);
+        $checklist[] = [
+            'label' => $osvScanned
+                ? 'Aucune vulnerabilite connue (OSV.dev) sur les dependances'
+                : 'Vulnerabilites connues (OSV.dev) : scan non effectue (reseau indisponible ou desactive)',
+            'ok'    => $osvScanned ? count($osvFindings) === 0 : true, // n'echoue pas la checklist si le scan n'a pas pu avoir lieu
+        ];
+
         return $checklist;
     }
 

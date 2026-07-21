@@ -156,12 +156,13 @@ identifiees ici :
   partir du HTML via un outil externe (`wkhtmltopdf`, Chrome headless
   `--print-to-pdf`, ou une lib comme Dompdf) plutot que de reimplementer un
   moteur de mise en page PDF maison.
-- **Vulnerabilites de dependances (CVE reelles)** : `DependencyAnalyzer`
-  liste les dependances et signale les contraintes de version a risque,
-  mais ne consulte pas (encore) une base de vulnerabilites en ligne
-  (OSV.dev, GitHub Advisory Database). Le branchement est simple a ajouter
-  (un appel HTTP a l'API OSV par paquet) mais nécessite une gestion de
-  quota/cache dediee.
+- ~~**Vulnerabilites de dependances (CVE reelles)**~~ : implemente depuis
+  v1.1. `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec
+  les versions exactes lues dans `composer.lock`/`package-lock.json`
+  (ou une version approximative si le lockfile est absent), met en cache
+  les details 24h, et se degrade sans erreur si le reseau est indisponible.
+  Reglages dans `config.php` (`dependencies.osv_*`). Necessite l'extension
+  `curl` et un acces reseau sortant vers `api.osv.dev`.
 - **Workers paralleles reels** : le mode CI actuel est sequentiel. Un vrai
   pool de workers (via `pcntl_fork` ou plusieurs processus PHP CLI en
   parallele avec repartition de la file) est prevu en v2 pour les tres

@@ -47,7 +47,7 @@ class AnalysisEngine
         $this->architectureAnalyzer = new ArchitectureAnalyzer($config['thresholds']);
         $this->qualityAnalyzer = new QualityAnalyzer();
         $this->documentationAnalyzer = new DocumentationAnalyzer();
-        $this->dependencyAnalyzer = new DependencyAnalyzer();
+        $this->dependencyAnalyzer = new DependencyAnalyzer($config['dependencies'] ?? [], $config['cache']['path']);
         $this->statistics = new Statistics();
         $this->promptBuilder = new PromptBuilder();
         $this->aiModel = new GithubModel($config['ai'], $this->logger);
