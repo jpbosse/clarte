@@ -114,7 +114,7 @@ return [
         'json'         => true,
         'markdown'     => true,
         'csv'          => true,
-        // 'pdf' => false, // prevu en v2 (necessite une lib de rendu, voir README)
+        'pdf'          => false, // necessite wkhtmltopdf ou Chrome/Chromium installe (voir README) ; activer via --pdf ou true ici
     ],
 
     'log_file' => __DIR__ . '/reports/logs.txt',

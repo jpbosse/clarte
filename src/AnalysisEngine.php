@@ -31,6 +31,7 @@ class AnalysisEngine
     private GraphBuilder $graphBuilder;
     private HtmlReport $htmlReport;
     private Exporter $exporter;
+    private PdfExporter $pdfExporter;
 
     private int $aiCallsCount = 0;
     private int $aiTokensCount = 0;
@@ -58,6 +59,7 @@ class AnalysisEngine
         $this->graphBuilder = new GraphBuilder();
         $this->htmlReport = new HtmlReport();
         $this->exporter = new Exporter();
+        $this->pdfExporter = new PdfExporter($this->logger);
     }
 
     public function run(string $projectPath, bool $useAi = false, bool $diffOnly = false, ?string $diffBase = null): array
@@ -132,9 +134,14 @@ class AnalysisEngine
 
         $this->logger->startStep('Generation des rapports');
 
+        $pdfResult = null;
         if ($this->config['output']['html']) {
             $html = $this->htmlReport->render($statistics, $summary, $fileResults, $dependencyResult, $comparison, $graphs, $projectName);
             file_put_contents($outputDir . '/rapport.html', $html);
+
+            if ($this->config['output']['pdf'] ?? false) {
+                $pdfResult = $this->pdfExporter->export($outputDir . '/rapport.html', $outputDir . '/rapport.pdf');
+            }
         }
         if ($this->config['output']['json']) {
             $this->exporter->exportJson(compact('statistics', 'summary', 'fileResults', 'dependencyResult'), $outputDir . '/rapport.json');
@@ -159,6 +166,7 @@ class AnalysisEngine
             'ai_calls'   => $this->aiCallsCount,
             'ai_tokens'  => $this->aiTokensCount,
             'output_dir' => $outputDir,
+            'pdf_result' => $pdfResult,
         ];
     }
 

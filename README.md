@@ -51,6 +51,7 @@ Options :
 | `--ci` | Mode CI/CD : code de sortie 2 si des problemes critiques sont detectes |
 | `--diff` | Analyse uniquement les fichiers modifies (indexes, non indexes, nouveaux) par rapport a HEAD |
 | `--diff=<ref>` | Analyse uniquement les fichiers qui different entre `<ref>` (ex: `origin/main`) et HEAD — ideal en CI sur une PR |
+| `--pdf` | Genere aussi `reports/rapport.pdf` (necessite `wkhtmltopdf` ou Chrome/Chromium installe) |
 | `--config=chemin.php` | Utilise un fichier de configuration alternatif |
 
 Le rapport est genere dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
@@ -176,10 +177,13 @@ plus qu'une session de travail pour etre faites *serieusement* plutot que
 factices. Plutot que de simuler ces fonctionnalites, elles sont clairement
 identifiees ici :
 
-- **Export PDF** : non inclus en v1. Recommandation : generer le PDF a
-  partir du HTML via un outil externe (`wkhtmltopdf`, Chrome headless
-  `--print-to-pdf`, ou une lib comme Dompdf) plutot que de reimplementer un
-  moteur de mise en page PDF maison.
+- ~~**Export PDF**~~ : implemente depuis v1.3. `PdfExporter` s'appuie sur
+  un outil externe deja present sur la machine (`wkhtmltopdf` en priorite,
+  sinon Chrome/Chromium en mode headless) plutot que de reimplementer un
+  moteur de mise en page PDF maison. Activer avec `--pdf` ou
+  `output.pdf => true` dans `config.php`. Si aucun outil n'est trouve,
+  l'analyse continue normalement (le HTML reste genere) avec un message
+  expliquant comment installer l'un des deux.
 - ~~**Vulnerabilites de dependances (CVE reelles)**~~ : implemente depuis
   v1.1. `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec
   les versions exactes lues dans `composer.lock`/`package-lock.json`
