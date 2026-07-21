@@ -274,6 +274,15 @@ Pour ajouter un nouvel analyseur (ex: analyse Vue.js dediee) :
 4. Ajoutez une entree dans le menu lateral et une fonction `renderCategory()`
    cote JS dans `HtmlReport::js()`.
 
+## Qui developpe Clarté ?
+
+Clarté est developpe par Jean-Pierre Bossé, retraite de la fonction publique
+territoriale, base a Soullans (Vendee). Ce projet est ne d'une connaissance
+de terrain, des besoins des petites structures, et d'une conviction : il
+faut aider les developpeurs avec un outil libre et bien concu, qui peut
+repondre aux besoins de 90 % des organisations publiques ou privees de
+petite taille.
+
 ## Licence
 
 MIT — a adapter selon vos besoins internes.
