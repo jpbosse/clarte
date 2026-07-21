@@ -7,12 +7,11 @@ Blade / JavaScript en cinq dimensions (sécurité, qualité, architecture,
 performance, documentation), explique chaque note de manière vérifiable,
 et restitue le tout dans un rapport interactif limpide.
 
-
-Outil professionnel d'analyse statique et assistee par IA pour projets
-PHP / Laravel / Blade / JavaScript / Vue. Genere un rapport HTML unique,
+Outil professionnel d'analyse statique et assistée par IA pour projets
+PHP / Laravel / Blade / JavaScript / Vue. Génère un rapport HTML unique,
 autonome et interactif (dashboard, recherche, filtres, graphiques,
-theme clair/sombre), comparable dans l'esprit a SonarQube ou CodeClimate,
-tout en restant leger et sans dependance lourde.
+thème clair/sombre), comparable dans l'esprit à SonarQube ou CodeClimate,
+tout en restant léger et sans dépendance lourde.
 
 ## Installation
 
@@ -21,20 +20,20 @@ git clone <votre-repo> Clarte
 cd Clarte
 ```
 
-Aucune dependance externe (Composer) n'est strictement necessaire pour la
-v1 : un autoloader PSR-4 minimal suffit. Si vous preferez utiliser Composer
-(recommande pour la maintenabilite a long terme) :
+Aucune dépendance externe (Composer) n'est strictement nécessaire pour la
+v1 : un autoloader PSR-4 minimal suffit. Si vous préférez utiliser Composer
+(recommandé pour la maintenabilité à long terme) :
 
 ```bash
 composer install
 ```
 
 Sinon, copiez le fichier `vendor/autoload.php` fourni dans le paquet
-(autoload manuel, sans dependance tierce).
+(autoload manuel, sans dépendance tierce).
 
-**Prerequis** : PHP >= 8.1, extensions `json`, `mbstring` (recommandee,
-un mode degrade sans elle est prevu), `curl` (necessaire uniquement si
-vous activez l'analyse IA).
+**Prérequis** : PHP >= 8.1, extensions `json`, `mbstring` (recommandée,
+un mode dégradé sans elle est prévu), `curl` (nécessaire uniquement si
+vous activez l'analyse IA ou le scan de vulnérabilités OSV.dev).
 
 ## Utilisation
 
@@ -46,22 +45,22 @@ Options :
 
 | Option | Effet |
 |---|---|
-| `--ai` | Active l'analyse assistee par IA (voir section IA ci-dessous) |
-| `--no-cache` | Ignore le cache et reanalyse tous les fichiers |
-| `--ci` | Mode CI/CD : code de sortie 2 si des problemes critiques sont detectes |
-| `--diff` | Analyse uniquement les fichiers modifies (indexes, non indexes, nouveaux) par rapport a HEAD |
-| `--diff=<ref>` | Analyse uniquement les fichiers qui different entre `<ref>` (ex: `origin/main`) et HEAD — ideal en CI sur une PR |
-| `--pdf` | Genere aussi `reports/rapport.pdf` (Chrome/Chromium recommande ; wkhtmltopdf en repli produit un PDF incomplet, voir limites ci-dessous) |
+| `--ai` | Active l'analyse assistée par IA (voir section IA ci-dessous) |
+| `--no-cache` | Ignore le cache et réanalyse tous les fichiers |
+| `--ci` | Mode CI/CD : code de sortie 2 si des problèmes critiques sont détectés |
+| `--diff` | Analyse uniquement les fichiers modifiés (indexés, non indexés, nouveaux) par rapport à HEAD |
+| `--diff=<ref>` | Analyse uniquement les fichiers qui diffèrent entre `<ref>` (ex: `origin/main`) et HEAD — idéal en CI sur une PR |
+| `--pdf` | Génère aussi `reports/rapport.pdf` (Chrome/Chromium recommandé ; wkhtmltopdf en repli produit un PDF incomplet, voir limites ci-dessous) |
 | `--config=chemin.php` | Utilise un fichier de configuration alternatif |
 
-Le rapport est genere dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
+Le rapport est généré dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
 Ouvrez simplement `rapport.html` dans un navigateur : aucune connexion
-Internet n'est requise, tout est embarque (CSS + JS).
+Internet n'est requise, tout est embarqué (CSS + JS).
 
-### Mode `--diff` : analyse incrementale
+### Mode `--diff` : analyse incrémentale
 
-Plutot que de re-analyser tout le projet, `--diff` cible uniquement ce qui
-a change — utile avant un commit, ou en CI pour ne juger que les fichiers
+Plutôt que de ré-analyser tout le projet, `--diff` cible uniquement ce qui
+a changé — utile avant un commit, ou en CI pour ne juger que les fichiers
 d'une PR :
 
 ```bash
@@ -72,128 +71,131 @@ php clarte.php /chemin/projet --diff
 php clarte.php /chemin/projet --diff=origin/main --ci
 ```
 
-Le projet cible doit etre un depot Git ; sinon (ou si la reference donnee
-n'existe pas), Clarté se replie automatiquement sur une analyse complete
-en le signalant clairement, plutot que d'echouer silencieusement. Le score
-d'une analyse `--diff` porte uniquement sur le sous-ensemble analyse (une
-bannière l'indique dans le rapport) et n'est pas enregistre dans
+Le projet cible doit être un dépôt Git ; sinon (ou si la référence donnée
+n'existe pas), Clarté se replie automatiquement sur une analyse complète
+en le signalant clairement, plutôt que d'échouer silencieusement. Le score
+d'une analyse `--diff` porte uniquement sur le sous-ensemble analysé (une
+bannière l'indique dans le rapport) et n'est pas enregistré dans
 l'historique, pour ne pas fausser les comparaisons avec les analyses
-completes.
+complètes.
 
 ## Activer l'analyse IA
 
-L'IA est **desactivee par defaut**. Pour l'activer :
+L'IA est **désactivée par défaut**. Pour l'activer :
 
-1. Passez `ai.enabled` a `true` dans `config.php`.
-2. Definissez la variable d'environnement contenant votre token
-   (`GITHUB_MODELS_TOKEN` par defaut, configurable via `ai.token_env_var`).
-   Le token n'est jamais stocke en dur dans le code.
+1. Passez `ai.enabled` à `true` dans `config.php`.
+2. Définissez la variable d'environnement contenant votre token
+   (`GITHUB_MODELS_TOKEN` par défaut, configurable via `ai.token_env_var`).
+   Le token n'est jamais stocké en dur dans le code.
 3. Lancez avec l'option `--ai` :
 
 ```bash
 GITHUB_MODELS_TOKEN=xxxxx php clarte.php /chemin/projet --ai
 ```
 
-L'endpoint par defaut cible GitHub Models, mais `config.php` accepte tout
-endpoint compatible "chat completions" (OpenAI-like). Le client gere
-automatiquement le delai entre appels (`ai.delay_ms`), les tentatives avec
+L'endpoint par défaut cible GitHub Models, mais `config.php` accepte tout
+endpoint compatible « chat completions » (OpenAI-like). Le client gère
+automatiquement le délai entre appels (`ai.delay_ms`), les tentatives avec
 backoff exponentiel en cas de code 429/5xx, et le timeout.
 
 ## Architecture du projet
 
 ```
 Clarte/
-├── clarte.php               # Point d'entree CLI
-├── config.php                # Configuration (extensions, seuils, IA, exports...)
+├── clarte.php                # Point d'entrée CLI
+├── config.php                 # Configuration (extensions, seuils, IA, exports...)
 ├── composer.json
-├── cache/                    # Cache incremental (hash de contenu par fichier)
+├── cache/                     # Cache incrémental (hash de contenu par fichier)
 ├── reports/
 │   ├── rapport.html
 │   ├── rapport.json
 │   ├── rapport.md
 │   ├── rapport.csv
 │   ├── logs.txt
-│   └── history/               # Snapshots pour comparaison entre analyses
+│   └── history/                # Snapshots pour comparaison entre analyses
 └── src/
-    ├── Logger.php              # Journalisation horodatee
-    ├── Cache.php                # Cache / reprise apres interruption
-    ├── ProgressBar.php          # Barre de progression CLI avec ETA
-    ├── Scanner.php              # Parcours du projet, exclusions
-    ├── TokenEstimator.php       # Estimation du nombre de tokens
-    ├── Truncator.php            # Troncature intelligente des gros fichiers
-    ├── SecurityAnalyzer.php     # Audit securite (regex ciblees)
-    ├── PerformanceAnalyzer.php  # N+1, boucles imbriquees, requetes en boucle
-    ├── ArchitectureAnalyzer.php # God Object, classes/methodes trop longues
-    ├── QualityAnalyzer.php      # TODO/FIXME, duplication, code mort local
-    ├── DocumentationAnalyzer.php# Couverture PHPDoc
-    ├── DependencyAnalyzer.php   # Composer / npm (contraintes de version)
-    ├── Statistics.php           # Agregation des statistiques globales
-    ├── PromptBuilder.php        # Construction du prompt IA par fichier
-    ├── GithubModel.php          # Client API IA (rate limit + retry)
-    ├── SummaryBuilder.php       # Score global, priorites, checklist prod
-    ├── ScoreExplainer.php       # Transparence : methodologie, calcul reel, limites
-    ├── History.php              # Historique et comparaison entre analyses
-    ├── GraphBuilder.php         # Donnees pour les graphiques du rapport
-    ├── HtmlReport.php           # Generation du rapport HTML autonome
-    ├── Exporter.php             # Export JSON / Markdown / CSV
-    └── AnalysisEngine.php       # Orchestrateur du pipeline complet
+    ├── Logger.php               # Journalisation horodatée
+    ├── Cache.php                 # Cache / reprise après interruption
+    ├── ProgressBar.php           # Barre de progression CLI avec ETA
+    ├── Scanner.php               # Parcours du projet, exclusions
+    ├── TokenEstimator.php        # Estimation du nombre de tokens
+    ├── Truncator.php              # Troncature intelligente des gros fichiers
+    ├── SecurityAnalyzer.php      # Audit sécurité (regex ciblées)
+    ├── PerformanceAnalyzer.php   # N+1, boucles imbriquées, requêtes en boucle
+    ├── ArchitectureAnalyzer.php  # God Object, classes/méthodes trop longues
+    ├── QualityAnalyzer.php       # TODO/FIXME, duplication, code mort local
+    ├── DocumentationAnalyzer.php # Couverture PHPDoc
+    ├── DependencyAnalyzer.php    # Composer / npm (contraintes de version)
+    ├── VulnerabilityScanner.php  # Scan CVE réelles via OSV.dev
+    ├── GitDiffResolver.php       # Résolution des fichiers modifiés (--diff)
+    ├── ProjectRulesLoader.php    # Règles personnalisées par projet
+    ├── PdfExporter.php           # Export PDF (Chrome/Chromium, repli wkhtmltopdf)
+    ├── Statistics.php            # Agrégation des statistiques globales
+    ├── PromptBuilder.php         # Construction du prompt IA par fichier
+    ├── GithubModel.php           # Client API IA (rate limit + retry)
+    ├── SummaryBuilder.php        # Score global, priorités, checklist prod
+    ├── ScoreExplainer.php        # Transparence : méthodologie, calcul réel, limites
+    ├── History.php                # Historique et comparaison entre analyses
+    ├── GraphBuilder.php           # Données pour les graphiques du rapport
+    ├── HtmlReport.php             # Génération du rapport HTML autonome
+    ├── Exporter.php               # Export JSON / Markdown / CSV
+    └── AnalysisEngine.php         # Orchestrateur du pipeline complet
 ```
 
-Chaque classe a une responsabilite unique (SRP). L'orchestrateur
-`AnalysisEngine` ne contient aucune logique d'analyse : il delegue a
-chaque classe specialisee, ce qui rend le projet testable et extensible
+Chaque classe a une responsabilité unique (SRP). L'orchestrateur
+`AnalysisEngine` ne contient aucune logique d'analyse : il délègue à
+chaque classe spécialisée, ce qui rend le projet testable et extensible
 (ajouter un nouvel analyseur = ajouter une classe + un appel dans
 `AnalysisEngine::analyzeFile()`).
 
+## Règles personnalisables par projet
 
-## Regles personnalisables par projet
-
-Pour utiliser Clarté sur plusieurs projets aux conventions differentes
-sans toucher a `config.php` (partage entre tous les projets), placez un
-fichier `.clarte-rules.php` **a la racine du projet analyse** (pas dans
+Pour utiliser Clarté sur plusieurs projets aux conventions différentes
+sans toucher à `config.php` (partagé entre tous les projets), placez un
+fichier `.clarte-rules.php` **à la racine du projet analysé** (pas dans
 le dossier de Clarté) :
 
 ```php
 <?php
 return [
-    // Desactive completement certaines regles pour ce projet
+    // Désactive complètement certaines règles pour ce projet
     'disabled_rules' => ['todo_fixme', 'poor_naming'],
 
-    // Reclasse la severite d'une regle (n'affecte que ce projet)
+    // Reclasse la sévérité d'une règle (n'affecte que ce projet)
     'severity_overrides' => ['missing_phpdoc' => 'info'],
 
-    // Seuils d'architecture propres a ce projet (fusionnes avec ceux de config.php)
+    // Seuils d'architecture propres à ce projet (fusionnés avec ceux de config.php)
     'thresholds' => ['method_max_lines' => 80],
 
-    // Exclusions supplementaires, en plus de celles de config.php
+    // Exclusions supplémentaires, en plus de celles de config.php
     'excluded_dirs'  => ['legacy'],
     'excluded_files' => ['*.generated.php'],
 ];
 ```
 
-Toutes les cles sont optionnelles. Les identifiants de regle valides pour
+Toutes les clés sont optionnelles. Les identifiants de règle valides pour
 `disabled_rules`/`severity_overrides` correspondent au champ `rule` de
-chaque probleme dans `reports/rapport.json` (ex: `sql_concat`, `eval`,
+chaque problème dans `reports/rapport.json` (ex: `sql_concat`, `eval`,
 `hardcoded_secret`, `query_in_loop`, `nested_loops`, `class_too_long`,
 `method_too_long`, `god_class`, `too_many_params`, `todo_fixme`,
 `poor_naming`, `duplicated_line`, `unused_private_method`,
-`missing_phpdoc`, et les autres regles de `SecurityAnalyzer`).
+`missing_phpdoc`, et les autres règles de `SecurityAnalyzer`).
 
-Si le fichier est absent, mal forme (ne retourne pas un tableau), ou leve
-une erreur PHP, Clarté l'ignore proprement et revient aux reglages par
-defaut, avec un avertissement explicite dans les logs — jamais d'echec
+Si le fichier est absent, mal formé (ne retourne pas un tableau), ou lève
+une erreur PHP, Clarté l'ignore proprement et revient aux réglages par
+défaut, avec un avertissement explicite dans les logs — jamais d'échec
 silencieux ni de crash.
 
-**Note de securite** : ce fichier est execute comme du code PHP normal
-(au meme titre que `composer.json` ou `.php-cs-fixer.php`). Ne pointez
-Clarté qu'sur des projets dont vous maitrisez le contenu.
+**Note de sécurité** : ce fichier est exécuté comme du code PHP normal
+(au même titre que `composer.json` ou `.php-cs-fixer.php`). Ne pointez
+Clarté que sur des projets dont vous maîtrisez le contenu.
 
 **Limite connue** : comme pour les seuils de `config.php`, une
 modification de `.clarte-rules.php` n'est prise en compte que pour les
-fichiers dont le contenu a change depuis la derniere analyse (le cache
-est indexe par hash de contenu, pas par configuration). Utilisez
-`--no-cache` juste apres avoir modifie `.clarte-rules.php` pour forcer
-une reanalyse complete.
+fichiers dont le contenu a changé depuis la dernière analyse (le cache
+est indexé par hash de contenu, pas par configuration). Utilisez
+`--no-cache` juste après avoir modifié `.clarte-rules.php` pour forcer
+une réanalyse complète.
 
 ## Transparence de la notation
 
@@ -211,78 +213,95 @@ Principe directeur : une note qui ne peut pas s'expliquer ne vaut rien.
 
 ## Documents Markdown façon GitHub
 
-La section « Documents (.md) » du rapport liste tous les fichiers Markdown
-du projet (README, CHANGELOG, docs/...) et les affiche rendus comme sur
-GitHub : titres, listes, tableaux, blocs de code, citations, liens. Le
-README s'ouvre par défaut. Chaque fichier .md dispose aussi d'un onglet
-« Aperçu » dans la liste des fichiers. Le rendu échappe intégralement le
-HTML source : un document piégé ne peut pas exécuter de code dans le rapport.
+La section « Documents (README...) » du rapport liste tous les fichiers
+Markdown du projet (README, CHANGELOG, docs/...) et les affiche rendus
+comme sur GitHub : titres, listes, tableaux, blocs de code, citations,
+liens. Le README s'ouvre par défaut. Le rendu échappe intégralement le
+HTML source : un document piégé ne peut pas exécuter de code dans le
+rapport.
 
-## Limites connues (honnêtes) et roadmap v2
+À ne pas confondre avec la section « Documentation (code) », qui évalue
+la couverture en commentaires PHPDoc du code source lui-même.
 
-Cette v1 est fonctionnelle et testee de bout en bout, mais certaines
-fonctionnalites ambitieuses de votre cahier des charges initial demandent
-plus qu'une session de travail pour etre faites *serieusement* plutot que
-factices. Plutot que de simuler ces fonctionnalites, elles sont clairement
-identifiees ici :
+## Export PDF
 
-- ~~**Export PDF**~~ : implemente depuis v1.3. `PdfExporter` s'appuie sur
-  un outil externe deja present sur la machine : **Chrome/Chromium en
-  priorite** (moteur JS moderne complet, necessaire car le rapport est une
-  petite application JS), avec repli sur `wkhtmltopdf` si Chrome est
-  absent. Attention : `wkhtmltopdf` embarque un moteur JavaScript trop
-  ancien pour executer les scripts du rapport (ES6+) — le PDF produit
-  dans ce cas ne contiendra que le tableau de bord (les sections
-  Statistiques/Securite/Performance/Fichiers et les graphiques resteront
-  vides), avec un avertissement explicite affiche pour ne pas laisser
-  croire a tort que le PDF est complet. Activer avec `--pdf` ou
-  `output.pdf => true` dans `config.php`. Si aucun outil n'est trouve,
-  l'analyse continue normalement (le HTML reste genere) avec un message
-  expliquant comment installer Chrome/Chromium.
-- ~~**Vulnerabilites de dependances (CVE reelles)**~~ : implemente depuis
-  v1.1. `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec
-  les versions exactes lues dans `composer.lock`/`package-lock.json`
-  (ou une version approximative si le lockfile est absent), met en cache
-  les details 24h, et se degrade sans erreur si le reseau est indisponible.
-  Reglages dans `config.php` (`dependencies.osv_*`). Necessite l'extension
-  `curl` et un acces reseau sortant vers `api.osv.dev`.
-- **Workers paralleles reels** : le mode CI actuel est sequentiel. Un vrai
+`PdfExporter` s'appuie sur un outil externe déjà présent sur la machine :
+**Chrome/Chromium en priorité** (moteur JS moderne complet, nécessaire car
+le rapport est une petite application JS), avec repli sur `wkhtmltopdf` si
+Chrome est absent.
+
+Attention : `wkhtmltopdf` embarque un moteur JavaScript trop ancien pour
+exécuter les scripts du rapport (ES6+) — le PDF produit dans ce cas ne
+contiendra que le tableau de bord (les sections Statistiques/Sécurité/
+Performance/Fichiers et les graphiques resteront vides), avec un
+avertissement explicite affiché pour ne pas laisser croire à tort que le
+PDF est complet.
+
+Activer avec `--pdf` ou `output.pdf => true` dans `config.php`. Si aucun
+outil n'est trouvé, l'analyse continue normalement (le HTML reste généré)
+avec un message expliquant comment installer Chrome/Chromium.
+
+## Vérification des dépendances (CVE réelles)
+
+`VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec les
+versions exactes lues dans `composer.lock`/`package-lock.json` (ou une
+version approximative si le lockfile est absent, clairement signalée
+comme telle), met en cache les détails 24h, et se dégrade sans erreur si
+le réseau est indisponible. Réglages dans `config.php`
+(`dependencies.osv_*`). Nécessite l'extension `curl` et un accès réseau
+sortant vers `api.osv.dev`.
+
+## Limites connues (honnêtes) et pistes d'évolution
+
+Cette version est fonctionnelle et testée de bout en bout, mais certaines
+fonctionnalités ambitieuses demandent plus qu'une session de travail pour
+être faites *sérieusement* plutôt que factices. Plutôt que de simuler ces
+fonctionnalités, elles sont clairement identifiées ici :
+
+- **Détection de code mort inter-fichiers** : `QualityAnalyzer` détecte le
+  code mort local à un fichier, mais pas les méthodes/classes jamais
+  appelées ailleurs dans le projet (nécessite de construire un graphe
+  d'appels).
+- **Workers parallèles réels** : le mode CI actuel est séquentiel. Un vrai
   pool de workers (via `pcntl_fork` ou plusieurs processus PHP CLI en
-  parallele avec repartition de la file) est prevu en v2 pour les tres
-  gros projets.
-- **Heatmap de risque et graphe de dependances interactif avance** :
-  les donnees necessaires existent deja (issues par dossier, imports),
-  mais le rendu visuel avance (force-directed graph, heatmap calendaire)
-  n'est pas encore implemente dans `HtmlReport`.
-- **Analyse de flux de donnees (taint analysis)** : `SecurityAnalyzer`
-  detecte des motifs a risque par expressions regulieres, pas un vrai
-  suivi de flux source->sink. Pour une couverture exhaustive, completez
-  avec PHPStan + un plugin securite, ou Psalm en mode taint-analysis.
+  parallèle avec répartition de la file) est envisagé pour les très gros
+  projets.
+- **Heatmap de risque et graphe de dépendances interactif avancé** : les
+  données nécessaires existent déjà (issues par dossier, imports), mais
+  le rendu visuel avancé (force-directed graph, heatmap calendaire)
+  n'est pas encore implémenté dans `HtmlReport`.
+- **Analyse de flux de données (taint analysis)** : `SecurityAnalyzer`
+  détecte des motifs à risque par expressions régulières, pas un vrai
+  suivi de flux source → sink. Pour une couverture exhaustive, complétez
+  avec PHPStan + un plugin sécurité, ou Psalm en mode taint-analysis.
+- **Plugin éditeur** (VS Code / PhpStorm) : afficher les problèmes
+  directement dans l'éditeur plutôt que d'attendre le rapport HTML n'est
+  pas encore développé.
 
-Aucune de ces limites n'empeche l'usage quotidien de l'outil : elles
-sont documentees pour que vous sachiez precisement ce qui est solide
-aujourd'hui et ce qui reste a construire.
+Aucune de ces limites n'empêche l'usage quotidien de l'outil : elles sont
+documentées pour que vous sachiez précisément ce qui est solide
+aujourd'hui et ce qui reste à construire.
 
-## Extensibilite
+## Extensibilité
 
-Pour ajouter un nouvel analyseur (ex: analyse Vue.js dediee) :
+Pour ajouter un nouvel analyseur (ex: analyse Vue.js dédiée) :
 
-1. Creez `src/VueAnalyzer.php` avec une methode `analyze(string $content, string $lang): array`.
+1. Créez `src/VueAnalyzer.php` avec une méthode `analyze(string $content, string $lang): array`.
 2. Instanciez-la dans `AnalysisEngine::__construct()`.
-3. Appelez-la dans `AnalysisEngine::analyzeFile()` et ajoutez le resultat
+3. Appelez-la dans `AnalysisEngine::analyzeFile()` et ajoutez le résultat
    au tableau `issues`/`scores`.
-4. Ajoutez une entree dans le menu lateral et une fonction `renderCategory()`
-   cote JS dans `HtmlReport::js()`.
+4. Ajoutez une entrée dans le menu latéral et une fonction `renderCategory()`
+   côté JS dans `HtmlReport::js()`.
 
-## Qui developpe Clarté ?
+## Qui développe Clarté ?
 
-Clarté est developpe par Jean-Pierre Bossé, retraite de la fonction publique
-territoriale, base a Soullans (Vendee). Ce projet est ne d'une connaissance
+Clarté est développé par Jean-Pierre Bossé, retraité de la fonction publique
+territoriale, basé à Soullans (Vendée). Ce projet est né d'une connaissance
 de terrain, des besoins des petites structures, et d'une conviction : il
-faut aider les developpeurs avec un outil libre et bien concu, qui peut
-repondre aux besoins de 90 % des organisations publiques ou privees de
+faut aider les développeurs avec un outil libre et bien conçu, qui peut
+répondre aux besoins de 90 % des organisations publiques ou privées de
 petite taille.
 
 ## Licence
 
-MIT — a adapter selon vos besoins internes.
+MIT — à adapter selon vos besoins internes.
