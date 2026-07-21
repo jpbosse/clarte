@@ -460,9 +460,12 @@ canvas { max-width: 100%; }
 .partial-banner code { background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 4px; }
 
 /* ---- Organigramme ---- */
-.og-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
-.og-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
-.og-zoom { display: flex; align-items: center; gap: 8px; }
+.og-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.og-search { flex: 1 1 220px; min-width: 160px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 13px; }
+.og-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+.og-text-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); font-size: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.og-text-btn:hover { background: var(--bg-card); color: var(--text); }
+.og-zoom { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .og-zoom button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; font-size: 16px; line-height: 1; }
 .og-zoom button:hover { background: var(--accent); color: white; }
 .og-zoom-level, #og-zoom-level { font-size: 13px; color: var(--text-muted); min-width: 40px; text-align: center; }
@@ -470,21 +473,29 @@ canvas { max-width: 100%; }
 .og-legend-item { display: flex; align-items: center; gap: 5px; }
 .og-legend-item i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .og-stats { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
-.og-scroll-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); max-height: 75vh; }
-.og-canvas { position: relative; padding: 24px; width: max-content; transition: transform 0.15s ease; }
+.og-scroll-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); max-height: 75vh; padding: 4px; }
+.og-canvas { position: relative; padding: 20px; transition: transform 0.15s ease; transform-origin: top left; }
 .og-edges { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
-.og-groups { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; position: relative; }
-.og-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-width: 190px; }
-.og-group-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
-.og-group-count { font-weight: 400; text-transform: none; letter-spacing: 0; }
-.og-group-nodes { display: flex; flex-direction: column; gap: 6px; }
-.og-node { background: var(--bg); border: 1px solid var(--border); border-left: 4px solid #94a3b8; border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: opacity 0.15s ease, transform 0.1s ease; }
+.og-groups { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; position: relative; }
+.og-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; width: 230px; flex-shrink: 0; }
+.og-group-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; user-select: none; flex-wrap: wrap; }
+.og-group-title:hover { color: var(--accent); }
+.og-group-caret { color: var(--text-muted); width: 10px; display: inline-block; }
+.og-group-name { text-transform: uppercase; letter-spacing: 0.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+.og-group-count { font-weight: 400; color: var(--text-muted); }
+.og-group-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+.og-group-badge { font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+.og-group-badge-entry { background: rgba(234, 179, 8, 0.18); color: #eab308; }
+.og-group-nodes { flex-direction: column; gap: 6px; margin-top: 8px; }
+.og-node { background: var(--bg); border: 1px solid var(--border); border-left: 4px solid #94a3b8; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: opacity 0.15s ease, transform 0.1s ease; }
 .og-node:hover { transform: translateX(2px); border-color: var(--accent); }
 .og-node-label { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .og-node-kind { font-size: 10px; color: var(--text-muted); font-style: italic; }
 .og-badge { font-size: 11px; }
 .og-node.og-selected { outline: 2px solid var(--accent); outline-offset: 1px; }
 .og-node.og-dim { opacity: 0.25; }
+.og-node.og-search-hit { outline: 2px solid #eab308; }
+.og-node.og-search-miss { opacity: 0.2; }
 
 /* ---- Impression / export PDF ----
    Le rapport est une SPA à onglets (un seul .panel visible à la fois).
@@ -928,6 +939,7 @@ function renderOrganigramme() {
 
   const riskColors = { critical: '#ef4444', high: '#f97316', moderate: '#eab308', low: '#3b82f6', clean: '#22c55e' };
   const riskLabels = { critical: 'Critique', high: 'Élevé', moderate: 'Modéré', low: 'Faible', clean: 'Propre' };
+  const riskRank = { critical: 4, high: 3, moderate: 2, low: 1, clean: 0 };
   const entryPointLabels = {
     http_controller: "Contrôleur HTTP — reçoit des requêtes utilisateur",
     cli_command: "Commande CLI — reçoit des arguments en ligne de commande",
@@ -945,20 +957,38 @@ function renderOrganigramme() {
   let showUses = false;
   let selectedNode = null;
   let scale = 1;
+  const expandedGroups = new Set();
 
   const byGroup = {};
   graph.nodes.forEach(n => { (byGroup[n.group] = byGroup[n.group] || []).push(n); });
-  const sortedGroups = Object.keys(byGroup).sort();
+
+  // Resume de risque par groupe, pour trier et afficher un badge meme replie.
+  const groupSummaries = Object.entries(byGroup).map(([group, nodes]) => {
+    const counts = { critical: 0, high: 0, moderate: 0, low: 0, clean: 0 };
+    let entryPoints = 0;
+    nodes.forEach(n => { counts[n.risk_level]++; if (n.entry_point_type) entryPoints++; });
+    const worstRisk = ['critical', 'high', 'moderate', 'low', 'clean'].find(r => counts[r] > 0) || 'clean';
+    return { group, nodes, counts, entryPoints, worstRisk };
+  }).sort((a, b) => riskRank[b.worstRisk] - riskRank[a.worstRisk] || b.nodes.length - a.nodes.length);
+
+  // Les 5 groupes les plus a risque sont depliés d'office ; le reste attend un clic.
+  groupSummaries.slice(0, 5).forEach(g => { if (g.worstRisk !== 'clean') expandedGroups.add(g.group); });
 
   function nodeHtml(n) {
     const color = riskColors[n.risk_level] || '#94a3b8';
     const badge = n.entry_point_type ? `<span class="og-badge" title="${esc(entryPointLabels[n.entry_point_type] || '')}">⚡</span>` : '';
     const kind = n.is_interface ? 'interface' : (n.is_trait ? 'trait' : (n.is_abstract ? 'abstraite' : ''));
     const tooltip = `${n.file} — ${n.issue_count} problème(s) détecté(s)${kind ? ' — classe ' + kind : ''}`;
-    return `<div class="og-node" data-id="${esc(n.id)}" tabindex="0" style="border-left-color:${color}" title="${esc(tooltip)}">
+    return `<div class="og-node" data-id="${esc(n.id)}" data-search="${esc(n.label.toLowerCase())}" tabindex="0" style="border-left-color:${color}" title="${esc(tooltip)}">
       <span class="og-node-label">${badge}${esc(n.label)}</span>
       ${kind ? `<span class="og-node-kind">${kind}</span>` : ''}
     </div>`;
+  }
+
+  function groupBadgesHtml(g) {
+    return ['critical', 'high', 'moderate'].filter(r => g.counts[r] > 0)
+      .map(r => `<span class="og-group-badge" style="background:${riskColors[r]}22;color:${riskColors[r]}">${g.counts[r]} ${riskLabels[r].toLowerCase()}</span>`)
+      .join('') + (g.entryPoints > 0 ? `<span class="og-group-badge og-group-badge-entry">⚡ ${g.entryPoints}</span>` : '');
   }
 
   const legendHtml = Object.keys(riskColors).map(k =>
@@ -967,7 +997,10 @@ function renderOrganigramme() {
 
   container.innerHTML = `
     <div class="og-toolbar">
-      <label class="og-toggle"><input type="checkbox" id="og-toggle-uses"> Afficher aussi les imports simples (liens « uses », plus nombreux)</label>
+      <input type="text" id="og-search" class="og-search" placeholder="Rechercher une classe...">
+      <label class="og-toggle"><input type="checkbox" id="og-toggle-uses"> Imports simples (« uses »)</label>
+      <button type="button" id="og-expand-all" class="og-text-btn">Tout déplier</button>
+      <button type="button" id="og-collapse-all" class="og-text-btn">Tout replier</button>
       <div class="og-zoom">
         <button type="button" id="og-zoom-out" aria-label="Zoom arrière">−</button>
         <span id="og-zoom-level">100%</span>
@@ -975,7 +1008,7 @@ function renderOrganigramme() {
       </div>
     </div>
     <div class="og-legend-bar">${legendHtml}</div>
-    <p class="og-stats">${graph.stats.total_classes} classe(s) détectée(s), dont <strong>${graph.stats.entry_points}</strong> point(s) d'entrée (à auditer en priorité). Cliquez une classe pour isoler ses connexions ; cliquez à nouveau pour tout réafficher.</p>
+    <p class="og-stats">${graph.stats.total_classes} classe(s) détectée(s) dans ${groupSummaries.length} dossier(s), dont <strong>${graph.stats.entry_points}</strong> point(s) d'entrée (à auditer en priorité). Dossiers triés du plus au moins à risque ; les ${Math.min(5, groupSummaries.length)} premiers sont dépliés. Cliquez un dossier pour le déplier/replier, une classe pour isoler ses connexions.</p>
     <div class="og-scroll-wrapper">
       <div class="og-canvas" id="og-canvas">
         <svg id="og-edges" class="og-edges"></svg>
@@ -985,11 +1018,20 @@ function renderOrganigramme() {
   `;
 
   const groupsContainer = document.getElementById('og-groups');
-  sortedGroups.forEach(group => {
+  groupSummaries.forEach(g => {
     const wrap = document.createElement('div');
     wrap.className = 'og-group';
-    const nodesHtml = byGroup[group].map(nodeHtml).join('');
-    wrap.innerHTML = `<div class="og-group-title">${esc(group)} <span class="og-group-count">(${byGroup[group].length})</span></div><div class="og-group-nodes">${nodesHtml}</div>`;
+    wrap.dataset.group = g.group;
+    const isOpen = expandedGroups.has(g.group);
+    wrap.innerHTML = `
+      <div class="og-group-title" role="button" tabindex="0">
+        <span class="og-group-caret">${isOpen ? '▾' : '▸'}</span>
+        <span class="og-group-name">${esc(g.group)}</span>
+        <span class="og-group-count">(${g.nodes.length})</span>
+        <span class="og-group-badges">${groupBadgesHtml(g)}</span>
+      </div>
+      <div class="og-group-nodes" style="display:${isOpen ? 'flex' : 'none'}">${g.nodes.map(nodeHtml).join('')}</div>
+    `;
     groupsContainer.appendChild(wrap);
   });
 
@@ -1005,6 +1047,7 @@ function renderOrganigramme() {
 
     const positions = {};
     canvas.querySelectorAll('.og-node').forEach(el => {
+      if (el.offsetParent === null) return; // groupe replie : pas de position, pas d'arete tracee
       const r = el.getBoundingClientRect();
       positions[el.dataset.id] = {
         x: (r.left - canvasRect.left) / scale + (r.width / 2) / scale,
@@ -1041,7 +1084,7 @@ function renderOrganigramme() {
   }
 
   function applySelection() {
-    canvas_nodes().forEach(el => {
+    document.querySelectorAll('.og-node').forEach(el => {
       const id = el.dataset.id;
       if (!selectedNode) { el.classList.remove('og-dim', 'og-selected'); return; }
       if (id === selectedNode) { el.classList.add('og-selected'); el.classList.remove('og-dim'); return; }
@@ -1051,13 +1094,61 @@ function renderOrganigramme() {
     });
     drawEdges();
   }
-  function canvas_nodes() { return document.querySelectorAll('#og-groups .og-node'); }
 
-  canvas_nodes().forEach(el => {
-    el.addEventListener('click', () => {
-      selectedNode = (selectedNode === el.dataset.id) ? null : el.dataset.id;
-      applySelection();
+  function toggleGroup(groupEl, forceOpen) {
+    const nodesEl = groupEl.querySelector('.og-group-nodes');
+    const caret = groupEl.querySelector('.og-group-caret');
+    const willOpen = forceOpen !== undefined ? forceOpen : (nodesEl.style.display === 'none');
+    nodesEl.style.display = willOpen ? 'flex' : 'none';
+    caret.textContent = willOpen ? '▾' : '▸';
+    if (willOpen) {
+      attachNodeListeners(nodesEl);
+    }
+    requestAnimationFrame(drawEdges);
+  }
+
+  function attachNodeListeners(scopeEl) {
+    scopeEl.querySelectorAll('.og-node').forEach(el => {
+      if (el.dataset.bound) return;
+      el.dataset.bound = '1';
+      el.addEventListener('click', () => {
+        selectedNode = (selectedNode === el.dataset.id) ? null : el.dataset.id;
+        applySelection();
+      });
     });
+  }
+
+  document.querySelectorAll('.og-group-title').forEach(titleEl => {
+    titleEl.addEventListener('click', () => toggleGroup(titleEl.parentElement));
+    titleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup(titleEl.parentElement); } });
+  });
+  attachNodeListeners(document);
+
+  document.getElementById('og-expand-all').addEventListener('click', () => {
+    document.querySelectorAll('.og-group').forEach(g => toggleGroup(g, true));
+  });
+  document.getElementById('og-collapse-all').addEventListener('click', () => {
+    document.querySelectorAll('.og-group').forEach(g => toggleGroup(g, false));
+  });
+
+  document.getElementById('og-search').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    document.querySelectorAll('.og-group').forEach(groupEl => {
+      const matches = [...groupEl.querySelectorAll('.og-node')].filter(n => n.dataset.search.includes(term));
+      if (term === '') {
+        groupEl.style.display = '';
+        groupEl.querySelectorAll('.og-node').forEach(n => n.classList.remove('og-search-hit', 'og-search-miss'));
+        return;
+      }
+      groupEl.style.display = matches.length > 0 ? '' : 'none';
+      if (matches.length > 0) toggleGroup(groupEl, true);
+      groupEl.querySelectorAll('.og-node').forEach(n => {
+        const hit = n.dataset.search.includes(term);
+        n.classList.toggle('og-search-hit', hit);
+        n.classList.toggle('og-search-miss', !hit);
+      });
+    });
+    requestAnimationFrame(drawEdges);
   });
 
   document.getElementById('og-toggle-uses').addEventListener('change', (e) => {
