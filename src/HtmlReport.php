@@ -60,9 +60,9 @@ class HtmlReport
       <a href="#securite" class="nav-link" data-section="securite">🔒 Securite</a>
       <a href="#performance" class="nav-link" data-section="performance">⚡ Performance</a>
       <a href="#qualite" class="nav-link" data-section="qualite">🧹 Qualite</a>
-      <a href="#documentation" class="nav-link" data-section="documentation">📚 Documentation</a>
+      <a href="#documentation" class="nav-link" data-section="documentation">📚 Documentation (code)</a>
       <a href="#dependances" class="nav-link" data-section="dependances">📦 Dependances</a>
-      <a href="#documents" class="nav-link" data-section="documents">📖 Documents (.md)</a>
+      <a href="#documents" class="nav-link" data-section="documents">📖 Documents (README...)</a>
       <a href="#fichiers" class="nav-link" data-section="fichiers">🗂 Tous les fichiers</a>
       <a href="#synthese" class="nav-link" data-section="synthese">🎯 Synthese &amp; priorites</a>
     </nav>
@@ -124,6 +124,7 @@ class HtmlReport
 
     <section id="documentation" class="panel">
       <h1>Documentation</h1>
+      <p class="narrative">Cette section evalue si <strong>votre code lui-meme</strong> est bien commente (ex: chaque methode a-t-elle un bloc PHPDoc expliquant son role). A ne pas confondre avec « Documents (.md) » ci-dessous, qui affiche le contenu de vos fichiers README/CHANGELOG.</p>
       <div id="documentation-content" class="issues-list"></div>
     </section>
 
@@ -134,7 +135,7 @@ class HtmlReport
 
     <section id="documents" class="panel">
       <h1>Documents du projet</h1>
-      <p class="narrative">Les fichiers Markdown (README, documentation, changelog...) sont rendus ici comme sur GitHub.</p>
+      <p class="narrative">Les fichiers Markdown (README, documentation, changelog...) sont rendus ici comme sur GitHub. A ne pas confondre avec la section « Documentation » ci-dessus, qui note la qualite des commentaires dans le code lui-meme.</p>
       <div class="doc-layout">
         <div class="doc-sidebar" id="doc-list"></div>
         <div class="doc-viewer markdown-body" id="doc-viewer">
