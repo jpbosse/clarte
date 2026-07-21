@@ -51,7 +51,7 @@ Options :
 | `--ci` | Mode CI/CD : code de sortie 2 si des problemes critiques sont detectes |
 | `--diff` | Analyse uniquement les fichiers modifies (indexes, non indexes, nouveaux) par rapport a HEAD |
 | `--diff=<ref>` | Analyse uniquement les fichiers qui different entre `<ref>` (ex: `origin/main`) et HEAD — ideal en CI sur une PR |
-| `--pdf` | Genere aussi `reports/rapport.pdf` (necessite `wkhtmltopdf` ou Chrome/Chromium installe) |
+| `--pdf` | Genere aussi `reports/rapport.pdf` (Chrome/Chromium recommande ; wkhtmltopdf en repli produit un PDF incomplet, voir limites ci-dessous) |
 | `--config=chemin.php` | Utilise un fichier de configuration alternatif |
 
 Le rapport est genere dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
@@ -178,12 +178,18 @@ factices. Plutot que de simuler ces fonctionnalites, elles sont clairement
 identifiees ici :
 
 - ~~**Export PDF**~~ : implemente depuis v1.3. `PdfExporter` s'appuie sur
-  un outil externe deja present sur la machine (`wkhtmltopdf` en priorite,
-  sinon Chrome/Chromium en mode headless) plutot que de reimplementer un
-  moteur de mise en page PDF maison. Activer avec `--pdf` ou
+  un outil externe deja present sur la machine : **Chrome/Chromium en
+  priorite** (moteur JS moderne complet, necessaire car le rapport est une
+  petite application JS), avec repli sur `wkhtmltopdf` si Chrome est
+  absent. Attention : `wkhtmltopdf` embarque un moteur JavaScript trop
+  ancien pour executer les scripts du rapport (ES6+) — le PDF produit
+  dans ce cas ne contiendra que le tableau de bord (les sections
+  Statistiques/Securite/Performance/Fichiers et les graphiques resteront
+  vides), avec un avertissement explicite affiche pour ne pas laisser
+  croire a tort que le PDF est complet. Activer avec `--pdf` ou
   `output.pdf => true` dans `config.php`. Si aucun outil n'est trouve,
   l'analyse continue normalement (le HTML reste genere) avec un message
-  expliquant comment installer l'un des deux.
+  expliquant comment installer Chrome/Chromium.
 - ~~**Vulnerabilites de dependances (CVE reelles)**~~ : implemente depuis
   v1.1. `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec
   les versions exactes lues dans `composer.lock`/`package-lock.json`

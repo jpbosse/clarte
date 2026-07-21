@@ -451,6 +451,25 @@ canvas { max-width: 100%; }
 .partial-banner { margin-bottom: 16px; padding: 14px 16px; background: rgba(234, 179, 8, 0.12); border: 1px solid #eab308; border-radius: var(--radius); color: var(--text); }
 .partial-banner code { background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 4px; }
 
+/* ---- Impression / export PDF ----
+   Le rapport est une SPA a onglets (un seul .panel visible a la fois).
+   Un outil de conversion PDF (wkhtmltopdf, Chrome --print-to-pdf) ne
+   clique pas dans la navigation : sans ces regles, seule la section
+   active au chargement (le Dashboard) apparaitrait dans le PDF. On force
+   ici TOUTES les sections a s'afficher, empilees, et on masque les
+   elements uniquement utiles a l'interface interactive (barre laterale,
+   recherche, bouton de theme). */
+@media print {
+  :root { --bg: #ffffff; --bg-secondary: #ffffff; --bg-card: #ffffff; --text: #1a1d29; --text-muted: #6b7280; --border: #e5e7eb; --accent: #4f46e5; }
+  .sidebar, .topbar-search, #theme-toggle { display: none !important; }
+  .app { display: block; }
+  .content { margin: 0; }
+  .panel { display: block !important; page-break-before: always; animation: none; }
+  .panel:first-of-type { page-break-before: avoid; }
+  body { background: #ffffff; color: #1a1d29; }
+  .cards-grid, .charts-grid { break-inside: avoid; }
+}
+
 table.stat-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
 table.stat-table th, table.stat-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
 
@@ -699,6 +718,24 @@ themeToggle.addEventListener('click', () => {
 });
 
 // ---- Mini charting engine (canvas natif) ----
+// cssVar() : lit une variable CSS custom property, avec repli sur une
+// valeur fixe si le moteur de rendu ne la resout pas (cas de wkhtmltopdf,
+// dont le WebKit embarque est trop ancien pour toujours honorer
+// getComputedStyle() sur les custom properties -> chaine vide -> canvas
+// invisible sans ce filet de securite).
+const CSS_VAR_FALLBACKS = {
+  '--accent': '#6366f1',
+  '--text': '#e4e6eb',
+  '--text-muted': '#9aa0ac',
+  '--bg-card': '#1c202c',
+};
+function cssVar(name) {
+  let value = '';
+  try {
+    value = (getComputedStyle(root).getPropertyValue(name) || '').trim();
+  } catch (e) { /* ignore */ }
+  return value || CSS_VAR_FALLBACKS[name] || '#888888';
+}
 function drawBarChart(canvasId, labels, values, colors) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
@@ -708,18 +745,17 @@ function drawBarChart(canvasId, labels, values, colors) {
   const max = Math.max(...values, 1);
   const barWidth = w / values.length * 0.6;
   const gap = w / values.length;
-  const styles = getComputedStyle(root);
   ctx.font = '11px sans-serif';
   values.forEach((v, i) => {
     const barHeight = (v / max) * (h - 50);
     const x = i * gap + (gap - barWidth) / 2;
     const y = h - barHeight - 30;
-    ctx.fillStyle = colors ? colors[i % colors.length] : styles.getPropertyValue('--accent');
+    ctx.fillStyle = colors ? colors[i % colors.length] : cssVar('--accent');
     ctx.fillRect(x, y, barWidth, barHeight);
-    ctx.fillStyle = styles.getPropertyValue('--text');
+    ctx.fillStyle = cssVar('--text');
     ctx.textAlign = 'center';
     ctx.fillText(v, x + barWidth / 2, y - 6);
-    ctx.fillStyle = styles.getPropertyValue('--text-muted');
+    ctx.fillStyle = cssVar('--text-muted');
     const label = String(labels[i]).slice(0, 10);
     ctx.fillText(label, x + barWidth / 2, h - 14);
   });
@@ -745,7 +781,7 @@ function drawDonutChart(canvasId, labels, values) {
     ctx.fill();
     startAngle += sliceAngle;
   });
-  ctx.fillStyle = getComputedStyle(root).getPropertyValue('--bg-card');
+  ctx.fillStyle = cssVar('--bg-card');
   ctx.beginPath();
   ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2);
   ctx.fill();
@@ -756,7 +792,7 @@ function drawDonutChart(canvasId, labels, values) {
     const y = 20 + i * 18;
     ctx.fillStyle = palette[i % palette.length];
     ctx.fillRect(legendX, y - 8, 10, 10);
-    ctx.fillStyle = getComputedStyle(root).getPropertyValue('--text');
+    ctx.fillStyle = cssVar('--text');
     ctx.textAlign = 'left';
     ctx.fillText(String(label).slice(0, 14), legendX + 16, y);
   });
