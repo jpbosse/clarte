@@ -49,11 +49,35 @@ Options :
 | `--ai` | Active l'analyse assistee par IA (voir section IA ci-dessous) |
 | `--no-cache` | Ignore le cache et reanalyse tous les fichiers |
 | `--ci` | Mode CI/CD : code de sortie 2 si des problemes critiques sont detectes |
+| `--diff` | Analyse uniquement les fichiers modifies (indexes, non indexes, nouveaux) par rapport a HEAD |
+| `--diff=<ref>` | Analyse uniquement les fichiers qui different entre `<ref>` (ex: `origin/main`) et HEAD — ideal en CI sur une PR |
 | `--config=chemin.php` | Utilise un fichier de configuration alternatif |
 
 Le rapport est genere dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
 Ouvrez simplement `rapport.html` dans un navigateur : aucune connexion
 Internet n'est requise, tout est embarque (CSS + JS).
+
+### Mode `--diff` : analyse incrementale
+
+Plutot que de re-analyser tout le projet, `--diff` cible uniquement ce qui
+a change — utile avant un commit, ou en CI pour ne juger que les fichiers
+d'une PR :
+
+```bash
+# Avant un commit : que vais-je committer ?
+php clarte.php /chemin/projet --diff
+
+# En CI, sur une pull request vers main
+php clarte.php /chemin/projet --diff=origin/main --ci
+```
+
+Le projet cible doit etre un depot Git ; sinon (ou si la reference donnee
+n'existe pas), Clarté se replie automatiquement sur une analyse complete
+en le signalant clairement, plutot que d'echouer silencieusement. Le score
+d'une analyse `--diff` porte uniquement sur le sous-ensemble analyse (une
+bannière l'indique dans le rapport) et n'est pas enregistre dans
+l'historique, pour ne pas fausser les comparaisons avec les analyses
+completes.
 
 ## Activer l'analyse IA
 
