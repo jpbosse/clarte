@@ -1,0 +1,1 @@
+{"lang":"PHP","lines":54,"size":1679,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":5},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode handle() sans bloc PHPDoc","line":31}]},"ai":null}

@@ -1,0 +1,24 @@
+<?php
+
+namespace Clarte;
+
+/**
+ * Estimation approximative du nombre de tokens d'un texte, sans dependance
+ * a une bibliotheque de tokenisation exacte (tiktoken, etc.).
+ * Regle empirique : ~1 token pour 3.5 a 4 caracteres de code source.
+ */
+class TokenEstimator
+{
+    private const CHARS_PER_TOKEN = 3.8;
+
+    public function estimate(string $text): int
+    {
+        $length = mb_strlen($text);
+        return (int) ceil($length / self::CHARS_PER_TOKEN);
+    }
+
+    public function estimateCost(int $tokens, float $pricePerMillionInput = 0.15): float
+    {
+        return ($tokens / 1_000_000) * $pricePerMillionInput;
+    }
+}

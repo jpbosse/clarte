@@ -1,0 +1,1 @@
+{"lang":"PHP","lines":15,"size":264,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":0},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode test_the_application_returns_a_successful_response() sans bloc PHPDoc","line":9}]},"ai":null}

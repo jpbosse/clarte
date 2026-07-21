@@ -1,0 +1,1 @@
+{"lang":"PHP","lines":41,"size":877,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":0},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode documentTypeEnum() sans bloc PHPDoc","line":36}]},"ai":null}

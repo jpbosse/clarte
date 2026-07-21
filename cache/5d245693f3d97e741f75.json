@@ -1,0 +1,1 @@
+{"lang":"PHP","lines":103,"size":3830,"markdown":null,"scores":{"security":10,"performance":10,"architecture":10,"quality":10,"documentation":6.7},"issues":{"security":[],"performance":[],"architecture":[],"quality":[],"documentation":[{"severity":"info","message":"Methode index() sans bloc PHPDoc","line":53}]},"ai":null}
