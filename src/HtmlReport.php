@@ -556,6 +556,12 @@ table.stat-table th, table.stat-table td { text-align: left; padding: 8px 12px; 
 .modal-body h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-light); margin: 20px 0 8px; }
 .modal-body h3:first-child { margin-top: 0; }
 .modal-body p { margin: 0 0 12px; }
+.og-modal-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
+.og-modal-file { color: var(--text-muted); font-size: 12.5px; }
+.og-modal-entry { color: #eab308; font-size: 13px; }
+.og-modal-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 6px; }
+.og-modal-list li { font-size: 13px; padding: 6px 8px; background: var(--bg-card); border-radius: 6px; }
+.og-modal-relation { color: var(--text-muted); font-style: italic; }
 .modal-body .formula {
   background: var(--bg-secondary); border-left: 3px solid var(--accent);
   padding: 10px 14px; border-radius: 0 8px 8px 0; font-family: ui-monospace, monospace;
@@ -1095,6 +1101,50 @@ function renderOrganigramme() {
     drawEdges();
   }
 
+  const edgeTypeLabels = { extends: 'hérite de', implements: 'implémente', uses: 'importe' };
+  const edgeTypeLabelsReverse = { extends: 'est héritée par', implements: 'est implémentée par', uses: 'est importée par' };
+
+  function nodeById(id) { return graph.nodes.find(n => n.id === id); }
+
+  function showConnectionsPopup(nodeId) {
+    const node = nodeById(nodeId);
+    if (!node) return;
+    const modal = document.getElementById('explain-modal');
+    const title = document.getElementById('explain-title');
+    const body = document.getElementById('explain-body');
+    if (!modal || !title || !body) return;
+
+    const outgoing = graph.edges.filter(e => e.from === nodeId);
+    const incoming = graph.edges.filter(e => e.to === nodeId);
+
+    const color = riskColors[node.risk_level] || '#94a3b8';
+    const badge = node.entry_point_type ? `<p class="og-modal-entry">⚡ ${esc(entryPointLabels[node.entry_point_type] || '')}</p>` : '';
+
+    function listEdges(edges, otherKey, labels) {
+      if (edges.length === 0) return '<p style="color:var(--text-muted)">Aucune.</p>';
+      return '<ul class="og-modal-list">' + edges.map(e => {
+        const other = nodeById(e[otherKey]);
+        if (!other) return '';
+        const c = riskColors[other.risk_level] || '#94a3b8';
+        const eb = other.entry_point_type ? ' ⚡' : '';
+        return `<li><span class="og-modal-dot" style="background:${c}"></span><strong>${esc(other.label)}</strong>${eb} <span class="og-modal-relation">(${labels[e.type]})</span> <span class="og-modal-file">— ${esc(other.file)}</span></li>`;
+      }).join('') + '</ul>';
+    }
+
+    title.textContent = 'Connexions — ' + node.label;
+    body.innerHTML = `
+      <p><span class="og-modal-dot" style="background:${color}"></span><strong>${esc(node.id)}</strong></p>
+      <p class="og-modal-file">${esc(node.file)} — ${node.issue_count} problème(s) détecté(s)</p>
+      ${badge}
+      <h3>Dépend de (${outgoing.length})</h3>
+      ${listEdges(outgoing, 'to', edgeTypeLabels)}
+      <h3>Utilisée par (${incoming.length})</h3>
+      ${listEdges(incoming, 'from', edgeTypeLabelsReverse)}
+      ${(outgoing.length === 0 && incoming.length === 0) ? '<p style="color:var(--text-muted)">Aucune connexion locale détectée : cette classe ne dépend que de code externe (framework/vendor) et n\'est utilisée par aucune autre classe locale du projet.</p>' : ''}
+    `;
+    modal.classList.add('open');
+  }
+
   function toggleGroup(groupEl, forceOpen) {
     const nodesEl = groupEl.querySelector('.og-group-nodes');
     const caret = groupEl.querySelector('.og-group-caret');
@@ -1114,6 +1164,7 @@ function renderOrganigramme() {
       el.addEventListener('click', () => {
         selectedNode = (selectedNode === el.dataset.id) ? null : el.dataset.id;
         applySelection();
+        if (selectedNode) showConnectionsPopup(selectedNode);
       });
     });
   }
