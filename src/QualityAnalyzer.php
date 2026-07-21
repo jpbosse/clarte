@@ -18,6 +18,7 @@ class QualityAnalyzer
         foreach ($lines as $i => $line) {
             if (preg_match('/\b(TODO|FIXME|HACK)\b\s*:?\s*(.*)/i', $line, $m)) {
                 $issues[] = [
+                    'rule'     => 'todo_fixme',
                     'severity' => 'info',
                     'message'  => strtoupper($m[1]) . ' : ' . trim($m[2] ?: '(sans description)'),
                     'line'     => $i + 1,
@@ -48,6 +49,7 @@ class QualityAnalyzer
                 $seen[$varName] = true;
                 $line = substr_count(substr($content, 0, $offset), "\n") + 1;
                 $issues[] = [
+                    'rule'     => 'poor_naming',
                     'severity' => 'info',
                     'message'  => "Variable \${$varName} : nom peu explicite (une seule lettre)",
                     'line'     => $line,
@@ -75,6 +77,7 @@ class QualityAnalyzer
         foreach ($normalized as $text => $occurrences) {
             if (count($occurrences) >= 3) {
                 $issues[] = [
+                    'rule'     => 'duplicated_line',
                     'severity' => 'moderate',
                     'message'  => sprintf(
                         'Ligne dupliquee %d fois (lignes %s) : ' . mb_substr($text, 0, 60) . '...',
@@ -100,6 +103,7 @@ class QualityAnalyzer
                 if ($definitionAndCalls === 0) {
                     $line = substr_count(substr($content, 0, $offset), "\n") + 1;
                     $issues[] = [
+                        'rule'     => 'unused_private_method',
                         'severity' => 'moderate',
                         'message'  => "Methode privee {$methodName}() jamais appelee dans ce fichier (code potentiellement mort)",
                         'line'     => $line,

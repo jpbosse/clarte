@@ -29,6 +29,7 @@ class ArchitectureAnalyzer
 
         if ($totalLines > $this->thresholds['file_max_lines']) {
             $issues[] = [
+                'rule'     => 'file_too_long',
                 'severity' => 'moderate',
                 'message'  => "Fichier de {$totalLines} lignes : depasse le seuil de {$this->thresholds['file_max_lines']} lignes",
                 'line'     => 1,
@@ -46,6 +47,7 @@ class ArchitectureAnalyzer
 
                 if ($classLines > $this->thresholds['class_max_lines']) {
                     $issues[] = [
+                        'rule'     => 'class_too_long',
                         'severity' => 'moderate',
                         'message'  => "Classe {$className} : {$classLines} lignes (seuil : {$this->thresholds['class_max_lines']})",
                         'line'     => $startLine,
@@ -54,6 +56,7 @@ class ArchitectureAnalyzer
 
                 if ($methodCount >= $this->thresholds['god_class_methods']) {
                     $issues[] = [
+                        'rule'     => 'god_class',
                         'severity' => 'important',
                         'message'  => "Classe {$className} : {$methodCount} methodes, potentiel God Object / God Controller",
                         'line'     => $startLine,
@@ -79,6 +82,7 @@ class ArchitectureAnalyzer
 
                 if ($methodLines > $this->thresholds['method_max_lines']) {
                     $issues[] = [
+                        'rule'     => 'method_too_long',
                         'severity' => 'moderate',
                         'message'  => "Methode {$methodName}() : {$methodLines} lignes (seuil : {$this->thresholds['method_max_lines']})",
                         'line'     => $startLine,
@@ -87,6 +91,7 @@ class ArchitectureAnalyzer
 
                 if ($paramCount > $this->thresholds['max_params']) {
                     $issues[] = [
+                        'rule'     => 'too_many_params',
                         'severity' => 'info',
                         'message'  => "Methode {$methodName}() : {$paramCount} parametres (seuil : {$this->thresholds['max_params']}), envisager un DTO/objet de valeur",
                         'line'     => $startLine,
@@ -99,6 +104,7 @@ class ArchitectureAnalyzer
         if (str_contains($content, 'class') && preg_match('/class\s+\w*Controller/', $content)) {
             if (preg_match('/DB::(select|statement|table)\s*\(/', $content)) {
                 $issues[] = [
+                    'rule'     => 'db_query_in_controller',
                     'severity' => 'info',
                     'message'  => "Requete DB directe dans un controleur : envisager de deplacer la logique vers un Model/Repository/Service",
                     'line'     => 1,

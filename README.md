@@ -146,6 +146,55 @@ chaque classe specialisee, ce qui rend le projet testable et extensible
 `AnalysisEngine::analyzeFile()`).
 
 
+## Regles personnalisables par projet
+
+Pour utiliser Clarté sur plusieurs projets aux conventions differentes
+sans toucher a `config.php` (partage entre tous les projets), placez un
+fichier `.clarte-rules.php` **a la racine du projet analyse** (pas dans
+le dossier de Clarté) :
+
+```php
+<?php
+return [
+    // Desactive completement certaines regles pour ce projet
+    'disabled_rules' => ['todo_fixme', 'poor_naming'],
+
+    // Reclasse la severite d'une regle (n'affecte que ce projet)
+    'severity_overrides' => ['missing_phpdoc' => 'info'],
+
+    // Seuils d'architecture propres a ce projet (fusionnes avec ceux de config.php)
+    'thresholds' => ['method_max_lines' => 80],
+
+    // Exclusions supplementaires, en plus de celles de config.php
+    'excluded_dirs'  => ['legacy'],
+    'excluded_files' => ['*.generated.php'],
+];
+```
+
+Toutes les cles sont optionnelles. Les identifiants de regle valides pour
+`disabled_rules`/`severity_overrides` correspondent au champ `rule` de
+chaque probleme dans `reports/rapport.json` (ex: `sql_concat`, `eval`,
+`hardcoded_secret`, `query_in_loop`, `nested_loops`, `class_too_long`,
+`method_too_long`, `god_class`, `too_many_params`, `todo_fixme`,
+`poor_naming`, `duplicated_line`, `unused_private_method`,
+`missing_phpdoc`, et les autres regles de `SecurityAnalyzer`).
+
+Si le fichier est absent, mal forme (ne retourne pas un tableau), ou leve
+une erreur PHP, Clarté l'ignore proprement et revient aux reglages par
+defaut, avec un avertissement explicite dans les logs — jamais d'echec
+silencieux ni de crash.
+
+**Note de securite** : ce fichier est execute comme du code PHP normal
+(au meme titre que `composer.json` ou `.php-cs-fixer.php`). Ne pointez
+Clarté qu'sur des projets dont vous maitrisez le contenu.
+
+**Limite connue** : comme pour les seuils de `config.php`, une
+modification de `.clarte-rules.php` n'est prise en compte que pour les
+fichiers dont le contenu a change depuis la derniere analyse (le cache
+est indexe par hash de contenu, pas par configuration). Utilisez
+`--no-cache` juste apres avoir modifie `.clarte-rules.php` pour forcer
+une reanalyse complete.
+
 ## Transparence de la notation
 
 Chaque carte de score du tableau de bord porte une icône (i). Un clic ouvre

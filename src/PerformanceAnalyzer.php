@@ -45,6 +45,7 @@ class PerformanceAnalyzer
 
                 if (preg_match('/(::(where|find|get|first|create|update|delete)\s*\(|DB::(select|table|statement)\s*\()/', $line)) {
                     $issues[] = [
+                        'rule'     => 'query_in_loop',
                         'severity' => 'moderate',
                         'message'  => "Requete Eloquent/DB executee a l'interieur d'une boucle (risque N+1)",
                         'line'     => $i + 1,
@@ -69,6 +70,7 @@ class PerformanceAnalyzer
             // heuristique legere : simple signal, pas une preuve formelle
             if (!str_contains($content, '::with(') && !str_contains($content, '->with(') && count($matches[0]) > 3) {
                 $issues[] = [
+                    'rule'     => 'n1_missing_eager_load',
                     'severity' => 'info',
                     'message'  => "Acces frequent a des relations sans eager-loading detecte (->with()) : verifier le risque N+1",
                     'line'     => 1,
@@ -91,6 +93,7 @@ class PerformanceAnalyzer
                 $loopLineStack[] = $i + 1;
                 if ($depth >= 3) {
                     $issues[] = [
+                        'rule'     => 'nested_loops',
                         'severity' => 'moderate',
                         'message'  => 'Boucles imbriquees sur 3 niveaux ou plus : complexite et cout potentiellement eleves',
                         'line'     => $i + 1,
@@ -117,6 +120,7 @@ class PerformanceAnalyzer
                 $includeCount++;
                 if ($includeCount > 15) {
                     $issues[] = [
+                        'rule'     => 'heavy_blade_includes',
                         'severity' => 'info',
                         'message'  => 'Nombre eleve de @include/@component dans une seule vue : envisager une decomposition',
                         'line'     => $i + 1,

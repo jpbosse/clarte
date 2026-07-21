@@ -32,14 +32,32 @@ class AnalysisEngine
     private HtmlReport $htmlReport;
     private Exporter $exporter;
     private PdfExporter $pdfExporter;
+    private ProjectRulesLoader $projectRulesLoader;
+    private array $projectRules;
 
     private int $aiCallsCount = 0;
     private int $aiTokensCount = 0;
 
     public function __construct(array $config)
     {
-        $this->config = $config;
         $this->logger = new Logger($config['log_file']);
+
+        $this->projectRulesLoader = new ProjectRulesLoader($this->logger);
+        $this->projectRules = $this->projectRulesLoader->load($config['project_path'] ?? null);
+
+        // Fusion des surcharges projet AVANT d'instancier Scanner/ArchitectureAnalyzer,
+        // qui figent la configuration au moment de leur construction.
+        if (!empty($this->projectRules['thresholds'])) {
+            $config['thresholds'] = array_replace($config['thresholds'], $this->projectRules['thresholds']);
+        }
+        if (!empty($this->projectRules['excluded_dirs'])) {
+            $config['excluded_dirs'] = array_merge($config['excluded_dirs'], $this->projectRules['excluded_dirs']);
+        }
+        if (!empty($this->projectRules['excluded_files'])) {
+            $config['excluded_files'] = array_merge($config['excluded_files'], $this->projectRules['excluded_files']);
+        }
+
+        $this->config = $config;
         $this->cache = new Cache($config['cache']['path'], $config['cache']['enabled']);
         $this->scanner = new Scanner($config, $this->logger);
         $this->tokenEstimator = new TokenEstimator();
@@ -170,6 +188,35 @@ class AnalysisEngine
         ];
     }
 
+    /**
+     * Applique les surcharges de .clarte-rules.php a une liste d'issues :
+     * retire celles dont la regle est desactivee, ajuste la severite de
+     * celles concernees par un override. Ne fait rien si aucune regle
+     * personnalisee n'est chargee (comportement inchange par defaut).
+     */
+    private function applyProjectRules(array $issues): array
+    {
+        $disabled = $this->projectRules['disabled_rules'];
+        $overrides = $this->projectRules['severity_overrides'];
+
+        if (empty($disabled) && empty($overrides)) {
+            return $issues;
+        }
+
+        $result = [];
+        foreach ($issues as $issue) {
+            $rule = $issue['rule'] ?? null;
+            if ($rule !== null && in_array($rule, $disabled, true)) {
+                continue;
+            }
+            if ($rule !== null && isset($overrides[$rule])) {
+                $issue['severity'] = $overrides[$rule];
+            }
+            $result[] = $issue;
+        }
+        return $result;
+    }
+
     private function analyzeFile(array $file, bool $useAi): array
     {
         $content = @file_get_contents($file['path']);
@@ -193,11 +240,11 @@ class AnalysisEngine
 
         $lines = substr_count($content, "\n") + 1;
 
-        $security = $this->securityAnalyzer->analyze($content, $file['lang']);
-        $performance = $this->performanceAnalyzer->analyze($content, $file['lang']);
-        $architecture = $this->architectureAnalyzer->analyze($content, $file['lang']);
-        $quality = $this->qualityAnalyzer->analyze($content, $file['lang']);
-        $documentation = $this->documentationAnalyzer->analyze($content, $file['lang']);
+        $security = $this->applyProjectRules($this->securityAnalyzer->analyze($content, $file['lang']));
+        $performance = $this->applyProjectRules($this->performanceAnalyzer->analyze($content, $file['lang']));
+        $architecture = $this->applyProjectRules($this->architectureAnalyzer->analyze($content, $file['lang']));
+        $quality = $this->applyProjectRules($this->qualityAnalyzer->analyze($content, $file['lang']));
+        $documentation = $this->applyProjectRules($this->documentationAnalyzer->analyze($content, $file['lang']));
 
         $ai = null;
         if ($useAi && $this->aiModel->isConfigured()) {

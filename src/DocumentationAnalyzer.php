@@ -27,6 +27,7 @@ class DocumentationAnalyzer
                 if (!$hasDocBlock) {
                     $line = substr_count(substr($content, 0, $offset), "\n") + 1;
                     $issues[] = [
+                        'rule'     => 'missing_phpdoc',
                         'severity' => 'info',
                         'message'  => "Methode {$methodName}() sans bloc PHPDoc",
                         'line'     => $line,
