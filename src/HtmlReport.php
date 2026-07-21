@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Genere un rapport HTML unique, autonome (CSS + JS embarques, aucune
- * dependance externe / CDN), avec dashboard, navigation laterale,
- * recherche instantanee, filtres, accordeons par fichier, graphiques
- * en canvas natif et theme clair/sombre.
+ * Genere un rapport HTML unique, autonome (CSS + JS embarqués, aucune
+ * dépendance externe / CDN), avec dashboard, navigation latérale,
+ * recherche instantanée, filtres, accordeons par fichier, graphiques
+ * en canvas natif et thème clair/sombre.
  */
 class HtmlReport
 {
@@ -38,7 +38,7 @@ class HtmlReport
 
         return <<<HTML
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" data-thème="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,17 +57,17 @@ class HtmlReport
       <a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a>
       <a href="#statistiques" class="nav-link" data-section="statistiques">📁 Statistiques</a>
       <a href="#architecture" class="nav-link" data-section="architecture">🏗 Architecture</a>
-      <a href="#securite" class="nav-link" data-section="securite">🔒 Securite</a>
+      <a href="#sécurité" class="nav-link" data-section="sécurité">🔒 Securite</a>
       <a href="#performance" class="nav-link" data-section="performance">⚡ Performance</a>
-      <a href="#qualite" class="nav-link" data-section="qualite">🧹 Qualite</a>
+      <a href="#qualité" class="nav-link" data-section="qualité">🧹 Qualité</a>
       <a href="#documentation" class="nav-link" data-section="documentation">📚 Documentation (code)</a>
-      <a href="#dependances" class="nav-link" data-section="dependances">📦 Dependances</a>
+      <a href="#dépendances" class="nav-link" data-section="dépendances">📦 Dépendances</a>
       <a href="#documents" class="nav-link" data-section="documents">📖 Documents (README...)</a>
       <a href="#fichiers" class="nav-link" data-section="fichiers">🗂 Tous les fichiers</a>
-      <a href="#synthese" class="nav-link" data-section="synthese">🎯 Synthese &amp; priorites</a>
+      <a href="#synthèse" class="nav-link" data-section="synthèse">🎯 Synthèse &amp; priorités</a>
     </nav>
     <div class="sidebar-footer">
-      <button id="theme-toggle" class="theme-toggle">🌙 / ☀️</button>
+      <button id="thème-toggle" class="thème-toggle">🌙 / ☀️</button>
       <div class="generated-at">Genere le {$generatedAt}</div>
     </div>
   </aside>
@@ -77,7 +77,7 @@ class HtmlReport
     <header class="topbar">
       <div class="topbar-title">Audit — {$projectName}</div>
       <div class="topbar-search">
-        <input type="text" id="global-search" placeholder="Rechercher un fichier, une fonction, un mot-cle...">
+        <input type="text" id="global-search" placeholder="Rechercher un fichier, une fonction, un mot-clé...">
       </div>
     </header>
 
@@ -90,8 +90,8 @@ class HtmlReport
       </div>
       <div class="charts-grid">
         <div class="chart-card"><h3>Repartition des langages</h3><canvas id="chart-languages" width="360" height="240"></canvas></div>
-        <div class="chart-card"><h3>Repartition des alertes par severite</h3><canvas id="chart-severity" width="360" height="240"></canvas></div>
-        <div class="chart-card"><h3>Scores moyens par categorie</h3><canvas id="chart-scores" width="360" height="240"></canvas></div>
+        <div class="chart-card"><h3>Repartition des alertes par sévérité</h3><canvas id="chart-severity" width="360" height="240"></canvas></div>
+        <div class="chart-card"><h3>Scores moyens par catégorie</h3><canvas id="chart-scores" width="360" height="240"></canvas></div>
         <div class="chart-card"><h3>Taille des fichiers</h3><canvas id="chart-sizes" width="360" height="240"></canvas></div>
       </div>
       {$comparisonHtml}
@@ -107,9 +107,9 @@ class HtmlReport
       <div id="architecture-content" class="issues-list"></div>
     </section>
 
-    <section id="securite" class="panel">
-      <h1>Audit securite</h1>
-      <div id="securite-content" class="issues-list"></div>
+    <section id="sécurité" class="panel">
+      <h1>Audit sécurité</h1>
+      <div id="sécurité-content" class="issues-list"></div>
     </section>
 
     <section id="performance" class="panel">
@@ -117,25 +117,25 @@ class HtmlReport
       <div id="performance-content" class="issues-list"></div>
     </section>
 
-    <section id="qualite" class="panel">
-      <h1>Qualite du code</h1>
-      <div id="qualite-content" class="issues-list"></div>
+    <section id="qualité" class="panel">
+      <h1>Qualité du code</h1>
+      <div id="qualité-content" class="issues-list"></div>
     </section>
 
     <section id="documentation" class="panel">
       <h1>Documentation</h1>
-      <p class="narrative">Cette section evalue si <strong>votre code lui-meme</strong> est bien commente (ex: chaque methode a-t-elle un bloc PHPDoc expliquant son role). A ne pas confondre avec « Documents (.md) » ci-dessous, qui affiche le contenu de vos fichiers README/CHANGELOG.</p>
+      <p class="narrative">Cette section évalue si <strong>votre code lui-même</strong> est bien commenté (ex: chaque méthode a-t-elle un bloc PHPDoc expliquant son rôle). A ne pas confondre avec « Documents (.md) » ci-dessous, qui affiche le contenu de vos fichiers README/CHANGELOG.</p>
       <div id="documentation-content" class="issues-list"></div>
     </section>
 
-    <section id="dependances" class="panel">
-      <h1>Dependances</h1>
-      <div id="dependances-content"></div>
+    <section id="dépendances" class="panel">
+      <h1>Dépendances</h1>
+      <div id="dépendances-content"></div>
     </section>
 
     <section id="documents" class="panel">
       <h1>Documents du projet</h1>
-      <p class="narrative">Les fichiers Markdown (README, documentation, changelog...) sont rendus ici comme sur GitHub. A ne pas confondre avec la section « Documentation » ci-dessus, qui note la qualite des commentaires dans le code lui-meme.</p>
+      <p class="narrative">Les fichiers Markdown (README, documentation, changelog...) sont rendus ici comme sur GitHub. A ne pas confondre avec la section « Documentation » ci-dessus, qui note la qualité des commentaires dans le code lui-même.</p>
       <div class="doc-layout">
         <div class="doc-sidebar" id="doc-list"></div>
         <div class="doc-viewer markdown-body" id="doc-viewer">
@@ -159,11 +159,11 @@ class HtmlReport
       <div id="files-accordion"></div>
     </section>
 
-    <section id="synthese" class="panel">
-      <h1>Synthese &amp; plan d'action priorise</h1>
+    <section id="synthèse" class="panel">
+      <h1>Synthèse &amp; plan d'action priorise</h1>
       <h2>Checklist avant mise en production</h2>
       <div class="checklist">{$checklistHtml}</div>
-      <h2>Top priorites</h2>
+      <h2>Top priorités</h2>
       <div class="priorities-list">{$prioritiesHtml}</div>
       <h2>Fichiers "chauds" (concentration de dette technique)</h2>
       <div class="hot-files-list">{$hotFilesHtml}</div>
@@ -199,27 +199,27 @@ HTML;
     }
 
     /**
-     * Encode en JSON de maniere sure a inserer dans un bloc <script>.
+     * Encode en JSON de manière sûre à insérer dans un bloc <script>.
      *
-     * Point critique : le code source analyse (JS, HTML, Blade...) peut
-     * legitimement contenir la sous-chaine "</script>" (ex: un fichier JS
+     * Point critique : le code source analysé (JS, HTML, Blade...) peut
+     * legitimement contenir la sous-chaîne "</script>" (ex: un fichier JS
      * qui manipule du HTML, un template Blade avec un tag script). Sans
-     * precaution, cette sous-chaine ferme prematurement la balise <script>
+     * précaution, cette sous-chaîne ferme prématurément la balise <script>
      * du rapport et casse tout le JavaScript qui suit (navigation, graphiques,
      * accordeons...). On NE PAS utiliser JSON_UNESCAPED_SLASHES (les "/" sont
-     * donc echappes en "\/", ce qui neutralise "</script>" -> "<\/script>"),
-     * et on ajoute une seconde barriere explicite au cas ou.
+     * donc échappés en "\/", ce qui neutralise "</script>" -> "<\/script>"),
+     * et on ajoute une seconde barrière explicite au cas où.
      */
     private function jsonForScript(?array $data): string
     {
         $json = json_encode($data, JSON_UNESCAPED_UNICODE);
         if ($json === false) {
             // Le contenu d'un fichier peut occasionnellement produire un
-            // encodage invalide malgre la normalisation UTF-8 amont : on
-            // degrade proprement plutot que de casser tout le rapport.
+            // encodage invalide malgré la normalisation UTF-8 amont : on
+            // dégradé proprement plutôt que de casser tout le rapport.
             return '{}';
         }
-        // Filet de securite supplementaire, insensible a la casse et aux espaces.
+        // Filet de sécurité supplémentaire, insensible à la casse et aux espaces.
         $json = preg_replace('/<\/(script)/i', '<\\/$1', $json);
         $json = str_replace('<!--', '<\\!--', $json);
         return $json;
@@ -252,12 +252,12 @@ HTML;
 
     private function renderDashboardCards(array $summary, array $statistics): string
     {
-        // Le 4e element est la cle d'explication : si elle est presente, une
-        // icone (i) cliquable apparait et ouvre le detail de la notation.
+        // Le 4e élément est la clé d'explication : si elle est présente, une
+        // icône (i) cliquable apparaît et ouvre le détail de la notation.
         $cards = [
             ['Score global', $summary['global_score'] . '/100', $this->scoreBadgeClass($summary['global_score'] / 10), 'global'],
-            ['Score qualite', $summary['scores']['quality'] . '/10', $this->scoreBadgeClass($summary['scores']['quality']), 'quality'],
-            ['Score securite', $summary['scores']['security'] . '/10', $this->scoreBadgeClass($summary['scores']['security']), 'security'],
+            ['Score qualité', $summary['scores']['quality'] . '/10', $this->scoreBadgeClass($summary['scores']['quality']), 'quality'],
+            ['Score sécurité', $summary['scores']['security'] . '/10', $this->scoreBadgeClass($summary['scores']['security']), 'security'],
             ['Score performance', $summary['scores']['performance'] . '/10', $this->scoreBadgeClass($summary['scores']['performance']), 'performance'],
             ['Score architecture', $summary['scores']['architecture'] . '/10', $this->scoreBadgeClass($summary['scores']['architecture']), 'architecture'],
             ['Score documentation', $summary['scores']['documentation'] . '/10', $this->scoreBadgeClass($summary['scores']['documentation']), 'documentation'],
@@ -270,7 +270,7 @@ HTML;
         $html = '';
         foreach ($cards as [$label, $value, $badgeClass, $explainKey]) {
             $infoIcon = $explainKey !== null
-                ? "<button class=\"kpi-info\" data-explain=\"{$explainKey}\" title=\"Comment cette note est-elle calculee ?\" aria-label=\"Explication de la note {$label}\">i</button>"
+                ? "<button class=\"kpi-info\" data-explain=\"{$explainKey}\" title=\"Comment cette note est-elle calculée ?\" aria-label=\"Explication de la note {$label}\">i</button>"
                 : '';
             $html .= "<div class=\"kpi-card {$badgeClass}\">"
                 . "<div class=\"kpi-label\">{$label}{$infoIcon}</div>"
@@ -294,7 +294,7 @@ HTML;
     private function renderPriorities(array $priorities): string
     {
         if (empty($priorities)) {
-            return '<p>Aucun probleme majeur detecte. 🎉</p>';
+            return '<p>Aucun problème majeur détecté. 🎉</p>';
         }
         $html = '';
         $severityBadge = ['critical' => '🔴 Critique', 'important' => '🟠 Important', 'moderate' => '🟡 Moyen', 'info' => '🔵 Information'];
@@ -311,9 +311,9 @@ HTML;
     private function renderHotFiles(array $hotFiles): string
     {
         if (empty($hotFiles)) {
-            return '<p>Aucun fichier ne concentre de probleme particulier.</p>';
+            return '<p>Aucun fichier ne concentre de problème particulier.</p>';
         }
-        $html = '<table class="hot-files-table"><thead><tr><th>Fichier</th><th>Nombre de problemes</th></tr></thead><tbody>';
+        $html = '<table class="hot-files-table"><thead><tr><th>Fichier</th><th>Nombre de problèmes</th></tr></thead><tbody>';
         foreach ($hotFiles as $entry) {
             $file = htmlspecialchars($entry['file']);
             $html .= "<tr><td>{$file}</td><td>{$entry['issues']}</td></tr>";
@@ -325,14 +325,14 @@ HTML;
     private function renderPartialBanner(array $partial): string
     {
         $base = $partial['base'] ?? null;
-        $baseLabel = $base ? "par rapport a <code>{$this->esc($base)}</code>" : "non commites (working tree)";
+        $baseLabel = $base ? "par rapport a <code>{$this->esc($base)}</code>" : "non commités (working tree)";
         $count = $partial['files_analyzed'] ?? 0;
 
         return <<<HTML
 <div class="partial-banner">
-  ⚠️ <strong>Analyse partielle (mode --diff)</strong> — seuls les {$count} fichier(s) modifie(s) {$baseLabel} ont ete analyses.
+  ⚠️ <strong>Analyse partielle (mode --diff)</strong> — seuls les {$count} fichier(s) modifie(s) {$baseLabel} ont été analyses.
   Le score global et les statistiques ci-dessous ne portent donc que sur ce sous-ensemble, pas sur l'ensemble du projet.
-  L'historique n'a pas ete mis a jour pour cette execution.
+  L'historique n'a pas été mis à jour pour cette exécution.
 </div>
 HTML;
     }
@@ -351,7 +351,7 @@ HTML;
 
         return <<<HTML
 <div class="comparison-box">
-  <h3>Evolution depuis la derniere analyse ({$prevDate})</h3>
+  <h3>Evolution depuis la dernière analyse ({$prevDate})</h3>
   <p>{$arrow} Score global : {$sign}{$scoreDiff} points — Alertes : {$comparison['issues_diff']}</p>
 </div>
 HTML;
@@ -368,7 +368,7 @@ HTML;
   --radius: 10px;
   --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
-html[data-theme="light"] {
+html[data-thème="light"] {
   --bg: #f4f5f7; --bg-secondary: #ffffff; --bg-card: #ffffff;
   --text: #1a1d29; --text-muted: #6b7280; --border: #e5e7eb;
 }
@@ -384,7 +384,7 @@ body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--
 .nav-link:hover { background: var(--bg-card); color: var(--text); }
 .nav-link.active { background: var(--accent); color: #fff; }
 .sidebar-footer { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
-.theme-toggle { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; margin-bottom: 8px; }
+.thème-toggle { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; margin-bottom: 8px; }
 .generated-at { font-size: 11px; color: var(--text-muted); }
 
 .content { flex: 1; min-width: 0; }
@@ -453,16 +453,16 @@ canvas { max-width: 100%; }
 .partial-banner code { background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 4px; }
 
 /* ---- Impression / export PDF ----
-   Le rapport est une SPA a onglets (un seul .panel visible a la fois).
+   Le rapport est une SPA à onglets (un seul .panel visible à la fois).
    Un outil de conversion PDF (wkhtmltopdf, Chrome --print-to-pdf) ne
-   clique pas dans la navigation : sans ces regles, seule la section
+   clique pas dans la navigation : sans ces règles, seule la section
    active au chargement (le Dashboard) apparaitrait dans le PDF. On force
-   ici TOUTES les sections a s'afficher, empilees, et on masque les
-   elements uniquement utiles a l'interface interactive (barre laterale,
-   recherche, bouton de theme). */
+   ici TOUTES les sections à s'afficher, empilées, et on masque les
+   éléments uniquement utiles à l'interface interactive (barre latérale,
+   recherche, bouton de thème). */
 @media print {
   :root { --bg: #ffffff; --bg-secondary: #ffffff; --bg-card: #ffffff; --text: #1a1d29; --text-muted: #6b7280; --border: #e5e7eb; --accent: #4f46e5; }
-  .sidebar, .topbar-search, #theme-toggle { display: none !important; }
+  .sidebar, .topbar-search, #thème-toggle { display: none !important; }
   .app { display: block; }
   .content { margin: 0; }
   .panel { display: block !important; page-break-before: always; animation: none; }
@@ -474,7 +474,7 @@ canvas { max-width: 100%; }
 table.stat-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
 table.stat-table th, table.stat-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
 
-/* ---- Icone (i) sur les cartes KPI ---- */
+/* ---- Icône (i) sur les cartes KPI ---- */
 .kpi-label { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .kpi-info {
   width: 17px; height: 17px; min-width: 17px; border-radius: 50%;
@@ -533,7 +533,7 @@ table.stat-table th, table.stat-table td { text-align: left; padding: 8px 12px; 
 .doc-item.active { background: var(--accent); color: #fff; }
 .doc-viewer { border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; background: var(--bg-card); min-height: 300px; overflow-x: auto; }
 
-/* Rendu Markdown facon GitHub */
+/* Rendu Markdown façon GitHub */
 .markdown-body { line-height: 1.7; font-size: 15px; }
 .markdown-body h1, .markdown-body h2 { border-bottom: 1px solid var(--border); padding-bottom: .3em; margin-top: 1.4em; }
 .markdown-body h1 { font-size: 1.9em; } .markdown-body h2 { font-size: 1.45em; }
@@ -578,11 +578,11 @@ CSS;
     private function js(): string
     {
         return <<<'JS'
-// ---- Echappement HTML : TOUTE donnee issue du code analyse (chemins,
-// messages, extraits, resume IA...) doit etre echappee avant insertion via
-// innerHTML, sinon un projet contenant du code piege (ex: un commentaire
-// "<img src=x onerror=...>") executerait ce code a l'ouverture du rapport.
-// C'est une protection XSS indispensable pour un outil d'audit de securite.
+// ---- Echappement HTML : TOUTE donnée issue du code analyse (chemins,
+// messages, extraits, résumé IA...) doit être échappée avant insertion via
+// innerHTML, sinon un projet contenant du code piégé (ex: un commentaire
+// "<img src=x onerror=...>") exécuterait ce code à l'ouverture du rapport.
+// C'est une protection XSS indispensable pour un outil d'audit de sécurité.
 function esc(value) {
   if (value === null || value === undefined) return '';
   return String(value)
@@ -593,15 +593,15 @@ function esc(value) {
     .replace(/'/g, '&#39;');
 }
 
-// ---- Moteur de rendu Markdown (sans dependance externe) ----
-// Regle de securite : le contenu est INTEGRALEMENT echappe avant toute
+// ---- Moteur de rendu Markdown (sans dépendance externe) ----
+// Règle de sécurité : le contenu est INTEGRALEMENT échappé avant toute
 // transformation. Les balises produites ensuite sont uniquement celles que
-// ce moteur genere lui-meme, jamais du HTML present dans le fichier source.
+// ce moteur génère lui-même, jamais du HTML présent dans le fichier source.
 function renderMarkdown(src) {
   if (!src) return '<p style="color:var(--text-muted)">Document vide.</p>';
 
   const codeBlocks = [];
-  // 1. On isole les blocs de code delimites par ``` pour les proteger
+  // 1. On isole les blocs de code délimités par ``` pour les protéger
   let text = src.replace(/```([a-zA-Z0-9+#-]*)\n([\s\S]*?)```/g, (m, lang, code) => {
     codeBlocks.push({ lang: lang || '', code: code });
     return `\u0000CODEBLOCK${codeBlocks.length - 1}\u0000`;
@@ -610,7 +610,7 @@ function renderMarkdown(src) {
   // 2. Echappement complet : plus aucun HTML du fichier source ne survit
   text = esc(text);
 
-  // 3. Tableaux (doivent etre traites avant les autres blocs)
+  // 3. Tableaux (doivent être traités avant les autres blocs)
   text = text.replace(/(^\|.+\|[ \t]*\n\|[ \t:|-]+\|[ \t]*\n(?:\|.*\|[ \t]*\n?)*)/gm, (block) => {
     const rows = block.trim().split('\n');
     if (rows.length < 2) return block;
@@ -642,7 +642,7 @@ function renderMarkdown(src) {
   text = text.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
   text = text.replace(/<\/blockquote>\n<blockquote>/g, '<br>');
 
-  // 7. Listes (a puces et numerotees)
+  // 7. Listes (à puces et numérotées)
   text = text.replace(/(?:^[ \t]*[-*+][ \t]+.*(?:\n|$))+/gm, (block) => {
     const items = block.trim().split('\n').map(l => l.replace(/^[ \t]*[-*+][ \t]+/, ''));
     return '<ul>' + items.map(i => `<li>${i}</li>`).join('') + '</ul>\n';
@@ -659,13 +659,13 @@ function renderMarkdown(src) {
              .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
              .replace(/~~([^~\n]+)~~/g, '<del>$1</del>');
 
-  // 9. Liens et images. L'URL est filtree : seuls http(s), mailto et les
-  //    chemins relatifs sont acceptes, ce qui neutralise javascript:...
+  // 9. Liens et images. L'URL est filtrée : seuls http(s), mailto et les
+  //    chemins relatifs sont acceptés, ce qui neutralise javascript:...
   const safeUrl = (u) => /^(https?:\/\/|mailto:|#|\.{0,2}\/|[\w.-]+\.[a-z]{2,})/i.test(u) ? u : '#';
   text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (m, alt, url) => `<img src="${safeUrl(url)}" alt="${alt}">`);
   text = text.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, (m, label, url) => `<a href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`);
 
-  // 10. Paragraphes : toute ligne restante non structuree
+  // 10. Paragraphes : toute ligne restante non structurée
   text = text.split(/\n{2,}/).map(block => {
     const t = block.trim();
     if (!t) return '';
@@ -674,7 +674,7 @@ function renderMarkdown(src) {
     return `<p>${t.replace(/\n/g, '<br>')}</p>`;
   }).join('\n');
 
-  // 11. Restitution des blocs de code, echappes eux aussi
+  // 11. Restitution des blocs de code, échappés eux aussi
   text = text.replace(/\u0000CODEBLOCK(\d+)\u0000/g, (m, i) => {
     const b = codeBlocks[parseInt(i, 10)];
     const langAttr = b.lang ? ` class="language-${esc(b.lang)}"` : '';
@@ -695,9 +695,9 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
-// ---- Theme (localStorage peut etre bloque en file://, notamment sous
-// Chromium/Brave selon la configuration de securite : on protege donc
-// chaque acces et on degrade proprement vers un stockage en memoire) ----
+// ---- Thème (localStorage peut être bloqué en file://, notamment sous
+// Chromium/Brave selon la configuration de sécurité : on protège donc
+// chaque accès et on se dégrade proprement vers un stockage en mémoire) ----
 function safeStorageGet(key, fallback) {
   try { return localStorage.getItem(key) || fallback; }
   catch (e) { return fallback; }
@@ -707,23 +707,23 @@ function safeStorageSet(key, value) {
   catch (e) { /* stockage indisponible (file://) : on continue sans persister */ }
 }
 
-const themeToggle = document.getElementById('theme-toggle');
+const themeToggle = document.getElementById('thème-toggle');
 const root = document.documentElement;
 let currentThemeMemory = safeStorageGet('ca_theme', 'dark');
-root.setAttribute('data-theme', currentThemeMemory);
+root.setAttribute('data-thème', currentThemeMemory);
 themeToggle.addEventListener('click', () => {
-  const current = root.getAttribute('data-theme');
+  const current = root.getAttribute('data-thème');
   const next = current === 'dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', next);
+  root.setAttribute('data-thème', next);
   safeStorageSet('ca_theme', next);
 });
 
 // ---- Mini charting engine (canvas natif) ----
 // cssVar() : lit une variable CSS custom property, avec repli sur une
-// valeur fixe si le moteur de rendu ne la resout pas (cas de wkhtmltopdf,
-// dont le WebKit embarque est trop ancien pour toujours honorer
-// getComputedStyle() sur les custom properties -> chaine vide -> canvas
-// invisible sans ce filet de securite).
+// valeur fixe si le moteur de rendu ne la résout pas (cas de wkhtmltopdf,
+// dont le WebKit embarqué est trop ancien pour toujours honorer
+// getComputedStyle() sur les custom properties -> chaîne vide -> canvas
+// invisible sans ce filet de sécurité).
 const CSS_VAR_FALLBACKS = {
   '--accent': '#6366f1',
   '--text': '#e4e6eb',
@@ -734,7 +734,7 @@ function cssVar(name) {
   let value = '';
   try {
     value = (getComputedStyle(root).getPropertyValue(name) || '').trim();
-  } catch (e) { /* ignore */ }
+  } catch (e) { /* ignoré */ }
   return value || CSS_VAR_FALLBACKS[name] || '#888888';
 }
 function drawBarChart(canvasId, labels, values, colors) {
@@ -833,7 +833,7 @@ function renderStats() {
   `;
 }
 
-// ---- Sections par categorie (securite, performance, architecture, qualite, documentation) ----
+// ---- Sections par catégorie (sécurité, performance, architecture, qualité, documentation) ----
 function renderCategory(sectionKey, containerId) {
   const container = document.getElementById(containerId);
   const severityBadge = { critical: '🔴 Critique', important: '🟠 Important', moderate: '🟡 Moyen', info: '🔵 Information' };
@@ -844,31 +844,31 @@ function renderCategory(sectionKey, containerId) {
       html += `<div class="issue-line"><strong>${severityBadge[issue.severity] || esc(issue.severity)}</strong> — <span style="font-family:monospace">${esc(f.path)}:${esc(issue.line)}</span> — ${esc(issue.message)}</div>`;
     });
   });
-  container.innerHTML = html || '<p>Aucun probleme detecte dans cette categorie. 🎉</p>';
+  container.innerHTML = html || '<p>Aucun problème détecté dans cette catégorie. 🎉</p>';
 }
 
-// ---- Dependances ----
+// ---- Dépendances ----
 function renderDependencies() {
   const d = REPORT_DATA.dependencies;
-  const container = document.getElementById('dependances-content');
+  const container = document.getElementById('dépendances-content');
   function osvBlock(osv) {
     if (!osv) return '';
     if (!osv.scanned) {
       return osv.skipped_reason
-        ? `<p class="issue-line">🔵 Scan CVE (OSV.dev) non effectue : ${esc(osv.skipped_reason)}</p>`
+        ? `<p class="issue-line">🔵 Scan CVE (OSV.dev) non effectué : ${esc(osv.skipped_reason)}</p>`
         : '';
     }
     if (!osv.findings.length) {
-      return `<p class="issue-line">🟢 Aucune vulnerabilite connue trouvee sur OSV.dev pour ces paquets.</p>`;
+      return `<p class="issue-line">🟢 Aucune vulnérabilité connue trouvée sur OSV.dev pour ces paquets.</p>`;
     }
-    return `<h3>Vulnerabilites connues (OSV.dev)</h3>` + osv.findings.map(f => {
-      const approx = f.approximate ? ' <em>(version approximative, verifier manuellement)</em>' : '';
-      const vulns = f.vulns.map(v => `<div class="issue-line">🔴 <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.id)}</a> — ${esc(v.summary)} (severite : ${esc(String(v.severity))})</div>`).join('');
+    return `<h3>Vulnérabilités connues (OSV.dev)</h3>` + osv.findings.map(f => {
+      const approx = f.approximate ? ' <em>(version approximative, vérifier manuellement)</em>' : '';
+      const vulns = f.vulns.map(v => `<div class="issue-line">🔴 <a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.id)}</a> — ${esc(v.summary)} (sévérité : ${esc(String(v.severity))})</div>`).join('');
       return `<p><strong>${esc(f.package)}</strong> @ ${esc(f.version)}${approx}</p>${vulns}`;
     }).join('');
   }
   function block(title, data) {
-    if (!data.found) return `<h2>${esc(title)}</h2><p>Aucun fichier de dependances trouve.</p>`;
+    if (!data.found) return `<h2>${esc(title)}</h2><p>Aucun fichier de dépendances trouvé.</p>`;
     const pkgRows = Object.entries(data.packages).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
     const warnRows = data.warnings.map(w => `<div class="issue-line">${esc(w.severity)} — ${esc(w.message)}</div>`).join('');
     return `<h2>${esc(title)}</h2>
@@ -905,25 +905,25 @@ function renderFiles(searchTerm = '') {
 
     const aiBlock = f.ai ? `
       <div class="ai-block">
-        <p><strong>Resume IA :</strong> ${esc(f.ai.resume || '')}</p>
+        <p><strong>Résumé IA :</strong> ${esc(f.ai.résumé || '')}</p>
         <p><strong>Dette technique :</strong> ${esc(f.ai.dette_technique || 'n/a')} — <strong>Score global IA :</strong> ${esc(f.ai.score_global || 'n/a')}/10</p>
         ${f.ai.pistes_amelioration ? '<p><strong>Pistes damelioration :</strong></p><ul>' + f.ai.pistes_amelioration.map(p => `<li>${esc(p)}</li>`).join('') + '</ul>' : ''}
       </div>` : '<p style="color:var(--text-muted)">Analyse IA non disponible pour ce fichier.</p>';
 
     const issuesHtml = allIssues.length
       ? allIssues.map(i => `<div class="issue-line">${severityBadge[i.severity] || ''} <strong>${esc(i.section)}</strong> — ligne ${esc(i.line)} — ${esc(i.message)}</div>`).join('')
-      : '<p style="color:var(--text-muted)">Aucun probleme detecte.</p>';
+      : '<p style="color:var(--text-muted)">Aucun problème détecté.</p>';
 
-    // Onglet "Apercu" reserve aux fichiers Markdown : rendu facon GitHub.
+    // Onglet "Aperçu" réservé aux fichiers Markdown : rendu façon GitHub.
     const hasMarkdown = f.lang === 'Markdown' && f.markdown;
     const markdownTab = hasMarkdown
-      ? `<div class="file-tab active" onclick="showFileTab(this, 'md-${idx}')">📖 Apercu</div>`
+      ? `<div class="file-tab active" onclick="showFileTab(this, 'md-${idx}')">📖 Aperçu</div>`
       : '';
     const markdownContent = hasMarkdown
       ? `<div id="md-${idx}" class="file-tab-content markdown-body">${renderMarkdown(f.markdown)}</div>`
       : '';
 
-    // Si un apercu markdown existe, il devient l'onglet actif par defaut :
+    // Si un aperçu markdown existe, il devient l'onglet actif par défaut :
     // les autres onglets ne portent alors plus la classe "active".
     const issuesTabActive = hasMarkdown ? '' : ' active';
     const issuesDisplay = hasMarkdown ? ' style="display:none"' : '';
@@ -948,7 +948,7 @@ function renderFiles(searchTerm = '') {
         <div id="ai-${idx}" class="file-tab-content" style="display:none">${aiBlock}</div>
       </div>
     </div>`;
-  }).join('') || '<p>Aucun fichier ne correspond a ce filtre.</p>';
+  }).join('') || '<p>Aucun fichier ne correspond à ce filtre.</p>';
 }
 
 function showFileTab(el, targetId) {
@@ -959,20 +959,20 @@ function showFileTab(el, targetId) {
   document.getElementById(targetId).style.display = 'block';
 }
 
-// ---- Documents Markdown (section dediee, facon GitHub) ----
-// Liste tous les .md du projet dans une barre laterale ; un clic affiche
-// le document rendu dans le visualiseur. Le README est ouvert par defaut.
+// ---- Documents Markdown (section dédiée, façon GitHub) ----
+// Liste tous les .md du projet dans une barre latérale ; un clic affiche
+// le document rendu dans le visualiseur. Le README est ouvert par défaut.
 function renderDocuments() {
   const docs = REPORT_DATA.files.filter(f => f.lang === 'Markdown' && f.markdown);
   const list = document.getElementById('doc-list');
   const viewer = document.getElementById('doc-viewer');
 
   if (!docs.length) {
-    list.innerHTML = '<p style="color:var(--text-muted);padding:12px;font-size:13px">Aucun fichier Markdown trouve dans le projet.</p>';
+    list.innerHTML = '<p style="color:var(--text-muted);padding:12px;font-size:13px">Aucun fichier Markdown trouvé dans le projet.</p>';
     return;
   }
 
-  // Le README (a la racine de preference) passe en tete de liste.
+  // Le README (à la racine de préférence) passe en tête de liste.
   docs.sort((a, b) => {
     const aReadme = /readme\.md$/i.test(a.path) ? 0 : 1;
     const bReadme = /readme\.md$/i.test(b.path) ? 0 : 1;
@@ -993,45 +993,45 @@ function renderDocuments() {
     el.addEventListener('click', () => safeRun('affichage document', () => showDoc(+el.dataset.doc)));
   });
 
-  showDoc(0); // README ouvert par defaut
+  showDoc(0); // README ouvert par défaut
 }
 
-// ---- Modale d'explication des scores (clic sur une icone "i") ----
-// Repond concretement a "pourquoi cette note ?" en combinant la
-// methodologie generale et le detail chiffre reel calcule pour ce projet.
+// ---- Modale d'explication des scores (clic sur une icône "i") ----
+// Répond concrètement a "pourquoi cette note ?" en combinant la
+// méthodologie générale et le détail chiffré réel calculé pour ce projet.
 function buildExplanationHtml(key) {
   const summary = REPORT_DATA.summary;
   const methodo = (summary.methodology || {})[key];
-  const detail = (summary.score_details || {})[key];
+  const détail = (summary.score_details || {})[key];
   if (!methodo) return '<p>Aucune explication disponible pour cette metrique.</p>';
 
   let html = '';
-  html += `<h3>Comment cette note est calculee</h3>`;
+  html += `<h3>Comment cette note est calculée</h3>`;
   html += `<div class="formula">${esc(methodo.formula)}</div>`;
-  html += `<p>${esc(methodo.detail)}</p>`;
+  html += `<p>${esc(methodo.détail)}</p>`;
 
-  // Detail chiffre reel pour ce projet (le "pourquoi 5,2/10")
-  if (detail) {
+  // Détail chiffré réel pour ce projet (le "pourquoi 5,2/10")
+  if (détail) {
     html += `<h3>Le calcul pour VOTRE projet</h3>`;
-    if (detail.score !== undefined) {
-      html += `<p><strong>Note obtenue : ${esc(detail.score)}/10</strong> (moyenne sur ${esc(detail.files_analyzed || 0)} fichiers).</p>`;
+    if (détail.score !== undefined) {
+      html += `<p><strong>Note obtenue : ${esc(détail.score)}/10</strong> (moyenne sur ${esc(détail.files_analyzed || 0)} fichiers).</p>`;
     }
-    const c = detail.issue_counts;
+    const c = détail.issue_counts;
     if (c && (c.critical || c.important || c.moderate || c.info)) {
       html += `<table class="calc-table"><thead><tr><th>Severite</th><th>Nombre</th></tr></thead><tbody>`;
       const rows = [['🔴 Critiques','critical'],['🟠 Importants','important'],['🟡 Moyens','moderate'],['🔵 Informations','info']];
       rows.forEach(([lbl, k]) => { if (c[k]) html += `<tr><td>${lbl}</td><td class="num">${c[k]}</td></tr>`; });
       html += `</tbody></table>`;
     }
-    if (detail.perfect_files !== undefined) {
-      html += `<p>${esc(detail.perfect_files)} fichier(s) sans aucun probleme dans cette categorie, ${esc(detail.files_with_issues || 0)} avec au moins un.</p>`;
+    if (détail.perfect_files !== undefined) {
+      html += `<p>${esc(détail.perfect_files)} fichier(s) sans aucun problème dans cette catégorie, ${esc(détail.files_with_issues || 0)} avec au moins un.</p>`;
     }
-    if (detail.note) {
-      html += `<p>${esc(detail.note)}</p>`;
+    if (détail.note) {
+      html += `<p>${esc(détail.note)}</p>`;
     }
-    if (detail.worst_files && detail.worst_files.length) {
+    if (détail.worst_files && détail.worst_files.length) {
       html += `<h3>Fichiers qui pesent le plus sur cette note</h3><table class="calc-table"><thead><tr><th>Fichier</th><th>Note</th></tr></thead><tbody>`;
-      detail.worst_files.forEach(w => html += `<tr><td>${esc(w.file)}</td><td class="num">${esc(w.score)}/10</td></tr>`);
+      détail.worst_files.forEach(w => html += `<tr><td>${esc(w.file)}</td><td class="num">${esc(w.score)}/10</td></tr>`);
       html += `</tbody></table>`;
     }
   }
@@ -1047,7 +1047,7 @@ function buildExplanationHtml(key) {
   const body = document.getElementById('explain-body');
   const title = document.getElementById('explain-title');
   const titles = {
-    global: 'Score global', security: 'Score securite', quality: 'Score qualite',
+    global: 'Score global', security: 'Score sécurité', quality: 'Score qualité',
     architecture: 'Score architecture', performance: 'Score performance', documentation: 'Score documentation'
   };
 
@@ -1068,7 +1068,7 @@ function buildExplanationHtml(key) {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 })();
 
-// ---- Execution robuste : une erreur dans une section ne doit JAMAIS
+// ---- Exécution robuste : une erreur dans une section ne doit JAMAIS
 // empecher l'affichage des autres sections du rapport. ----
 function safeRun(label, fn) {
   try {
@@ -1081,12 +1081,12 @@ function safeRun(label, fn) {
 safeRun('graphiques', renderCharts);
 window.addEventListener('resize', () => safeRun('graphiques (resize)', renderCharts));
 safeRun('statistiques', renderStats);
-safeRun('categorie architecture', () => renderCategory('architecture', 'architecture-content'));
-safeRun('categorie securite', () => renderCategory('security', 'securite-content'));
-safeRun('categorie performance', () => renderCategory('performance', 'performance-content'));
-safeRun('categorie qualite', () => renderCategory('quality', 'qualite-content'));
-safeRun('categorie documentation', () => renderCategory('documentation', 'documentation-content'));
-safeRun('dependances', renderDependencies);
+safeRun('catégorie architecture', () => renderCategory('architecture', 'architecture-content'));
+safeRun('catégorie sécurité', () => renderCategory('security', 'sécurité-content'));
+safeRun('catégorie performance', () => renderCategory('performance', 'performance-content'));
+safeRun('catégorie qualité', () => renderCategory('quality', 'qualité-content'));
+safeRun('catégorie documentation', () => renderCategory('documentation', 'documentation-content'));
+safeRun('dépendances', renderDependencies);
 safeRun('documents', renderDocuments);
 safeRun('fichiers', () => renderFiles());
 

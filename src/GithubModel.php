@@ -3,11 +3,11 @@
 namespace Clarte;
 
 /**
- * Client HTTP pour un modele compatible "chat completions" (GitHub Models
- * par defaut, mais compatible avec tout endpoint respectant ce format,
- * y compris l'API Anthropic/OpenAI via un endpoint adapte).
+ * Client HTTP pour un modèle compatible "chat completions" (GitHub Models
+ * par défaut, mais compatible avec tout endpoint respectant ce format,
+ * y compris l'API Anthropic/OpenAI via un endpoint adapté).
  *
- * Gere : le delai configurable entre appels, les tentatives avec backoff
+ * Gère : le délai configurable entre appels, les tentatives avec backoff
  * exponentiel, le timeout, et les erreurs de quota (HTTP 429).
  */
 class GithubModel
@@ -35,7 +35,7 @@ class GithubModel
     public function analyze(string $prompt): array
     {
         if (!$this->isConfigured()) {
-            return ['success' => false, 'error' => "IA non configuree (token absent ou 'enabled' = false)"];
+            return ['success' => false, 'error' => "IA non configurée (token absent ou 'enabled' = false)"];
         }
 
         $this->respectRateLimit();
@@ -64,11 +64,11 @@ class GithubModel
                 continue;
             }
 
-            // erreur non recuperable (401, 400...)
+            // erreur non récupérable (401, 400...)
             return ['success' => false, 'error' => $response['error'] ?? 'Erreur inconnue'];
         }
 
-        return ['success' => false, 'error' => "Echec apres {$maxRetries} tentatives"];
+        return ['success' => false, 'error' => "Échec après {$maxRetries} tentatives"];
     }
 
     private function respectRateLimit(): void
@@ -108,7 +108,7 @@ class GithubModel
         curl_close($ch);
 
         if ($curlError) {
-            return ['success' => false, 'error' => "Erreur reseau : {$curlError}", 'http_code' => 0];
+            return ['success' => false, 'error' => "Erreur réseau : {$curlError}", 'http_code' => 0];
         }
 
         if ($httpCode !== 200) {
@@ -122,7 +122,7 @@ class GithubModel
             return ['success' => false, 'error' => 'Reponse IA vide ou format inattendu', 'http_code' => $httpCode];
         }
 
-        // l'IA doit renvoyer du JSON pur ; on nettoie les eventuels ```json
+        // l'IA doit renvoyer du JSON pur ; on nettoie les éventuels ```json
         $clean = trim(preg_replace('/^```(?:json)?|```$/m', '', $text));
         $parsed = json_decode($clean, true);
 

@@ -3,9 +3,9 @@
 namespace Clarte;
 
 /**
- * Conserve un instantane (snapshot) de chaque analyse pour permettre
- * la comparaison entre deux executions (aujourd'hui / hier / semaine
- * derniere) : score gagne/perdu, nouvelles alertes, alertes corrigees.
+ * Conserve un instantané (snapshot) de chaque analyse pour permettre
+ * la comparaison entre deux exécutions (aujourd'hui / hier / semaine
+ * dernière) : score gagné/perdu, nouvelles alertes, alertes corrigées.
  */
 class History
 {

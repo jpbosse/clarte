@@ -3,8 +3,8 @@
 namespace Clarte;
 
 /**
- * Agrege les statistiques globales du projet a partir de la liste des
- * fichiers scannes et des resultats d'analyse par fichier.
+ * Agrege les statistiques globales du projet à partir de la liste des
+ * fichiers scannés et des résultats d'analyse par fichier.
  */
 class Statistics
 {

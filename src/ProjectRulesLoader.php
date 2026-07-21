@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Charge les surcharges de regles specifiques a UN projet analyse, depuis
- * un fichier `.clarte-rules.php` place a la racine de ce projet (pas dans
- * le dossier de Clarté lui-meme). Permet d'utiliser le meme outil sur
- * plusieurs projets aux conventions differentes sans toucher a la
+ * Charge les surcharges de règles spécifiques à UN projet analysé, depuis
+ * un fichier `.clarte-rules.php` placé à la racine de ce projet (pas dans
+ * le dossier de Clarté lui-même). Permet d'utiliser le même outil sur
+ * plusieurs projets aux conventions différentes sans toucher à la
  * configuration globale de Clarté.
  *
  * Format attendu (le fichier doit `return` un tableau) :
@@ -20,11 +20,11 @@ namespace Clarte;
  *       'thresholds' => ['method_max_lines' => 80],
  *   ];
  *
- * Note de securite : ce fichier est execute (`require`) comme du code PHP
- * normal, au meme titre qu'un `composer.json` ou un `.php-cs-fixer.php`
- * du projet analyse. Il n'est charge que si la personne l'a place
- * elle-meme dans un projet qu'elle a choisi d'analyser : ne jamais
- * pointer Clarté vers un projet dont on ne maitrise pas le contenu.
+ * Note de sécurité : ce fichier est exécuté (`require`) comme du code PHP
+ * normal, au même titre qu'un `composer.json` ou un `.php-cs-fixer.php`
+ * du projet analysé. Il n'est chargé que si la personne l'a placé
+ * elle-même dans un projet qu'elle a choisi d'analyser : ne jamais
+ * pointer Clarté vers un projet dont on ne maîtrise pas le contenu.
  */
 class ProjectRulesLoader
 {
@@ -51,12 +51,12 @@ class ProjectRulesLoader
         try {
             $userRules = require $file;
         } catch (\Throwable $e) {
-            $this->logger->warning(".clarte-rules.php present mais son execution a echoue ({$e->getMessage()}) : regles par defaut utilisees.");
+            $this->logger->warning(".clarte-rules.php present mais son exécution a échoué ({$e->getMessage()}) : règles par défaut utilisées.");
             return $defaults;
         }
 
         if (!is_array($userRules)) {
-            $this->logger->warning(".clarte-rules.php present mais ne retourne pas un tableau : regles par defaut utilisees.");
+            $this->logger->warning(".clarte-rules.php present mais ne retourne pas un tableau : règles par défaut utilisées.");
             return $defaults;
         }
 
@@ -64,11 +64,11 @@ class ProjectRulesLoader
 
         $unknownKeys = array_diff(array_keys($userRules), array_keys($defaults));
         if (!empty($unknownKeys)) {
-            $this->logger->warning('.clarte-rules.php contient des cles inconnues, ignorees : ' . implode(', ', $unknownKeys));
+            $this->logger->warning('.clarte-rules.php contient des clés inconnues, ignorées : ' . implode(', ', $unknownKeys));
         }
 
         $this->logger->info(sprintf(
-            '.clarte-rules.php charge : %d regle(s) desactivee(s), %d surcharge(s) de severite, %d seuil(s) personnalise(s).',
+            '.clarte-rules.php chargé : %d règle(s) désactivée(s), %d surcharge(s) de sévérité, %d seuil(s) personnalise(s).',
             count($merged['disabled_rules']),
             count($merged['severity_overrides']),
             count($merged['thresholds'])

@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Troncature intelligente : conserve le debut (imports, declarations,
- * en-tetes de classes) et la fin (souvent la logique de sortie / export)
- * d'un fichier trop volumineux pour etre envoye integralement a l'IA
- * ou affiche dans le rapport.
+ * Troncature intelligente : conserve le début (imports, déclarations,
+ * en-têtes de classes) et la fin (souvent la logique de sortie / export)
+ * d'un fichier trop volumineux pour être envoyé intégralement à l'IA
+ * ou affiché dans le rapport.
  */
 class Truncator
 {

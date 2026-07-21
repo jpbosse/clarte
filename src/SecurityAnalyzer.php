@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Audit de securite base sur des heuristiques (regex) cibles PHP/Laravel/JS.
- * Ce n'est pas un moteur d'analyse de flux de donnees (taint analysis) :
- * il s'agit de detection de motifs a risque, comme un premier filtre rapide,
- * a completer par des outils dedies (PHPStan + plugins securite, Psalm, etc.)
+ * Audit de sécurité base sur des heuristiques (regex) ciblées PHP/Laravel/JS.
+ * Ce n'est pas un moteur d'analyse de flux de données (taint analysis) :
+ * il s'agit de détection de motifs à risque, comme un premier filtre rapide,
+ * à compléter par des outils dédiés (PHPStan + plugins sécurité, Psalm, etc.)
  * pour une couverture exhaustive. Voir README, section "Limites connues".
  */
 class SecurityAnalyzer
@@ -20,37 +20,37 @@ class SecurityAnalyzer
             'sql_concat' => [
                 'pattern'  => '/(?:->query|->select|->raw|->statement|mysqli_query|->exec|DB::select|DB::statement|DB::raw|DB::table)\s*\(\s*["\'][^"\']*["\']?\s*\.\s*\$/i',
                 'severity' => 'critical',
-                'message'  => "Requete SQL potentiellement construite par concatenation (risque d'injection SQL)",
+                'message'  => "Requête SQL potentiellement construite par concaténation (risque d'injection SQL)",
             ],
             'eval' => [
                 'pattern'  => '/\beval\s*\(/',
                 'severity' => 'critical',
-                'message'  => 'Usage de eval() : execution de code dynamique dangereuse',
+                'message'  => 'Usage de eval() : exécution de code dynamique dangereuse',
             ],
             'exec' => [
                 'pattern'  => '/\b(exec|shell_exec|system|passthru|proc_open|popen)\s*\(/',
                 'severity' => 'critical',
-                'message'  => "Appel systeme direct ({function}) : verifier l'origine des arguments",
+                'message'  => "Appel système direct ({function}) : vérifier l'origine des arguments",
             ],
             'unserialize' => [
                 'pattern'  => '/\bunserialize\s*\(/',
                 'severity' => 'important',
-                'message'  => "unserialize() sur une donnee potentiellement non fiable (risque d'objet injection)",
+                'message'  => "unserialize() sur une donnée potentiellement non fiable (risque d'objet injection)",
             ],
             'dynamic_include' => [
                 'pattern'  => '/\b(include|require|include_once|require_once)\s*\(?\s*\$/',
                 'severity' => 'important',
-                'message'  => "Inclusion dynamique de fichier a partir d'une variable (risque LFI/RFI)",
+                'message'  => "Inclusion dynamique de fichier à partir d'une variable (risque LFI/RFI)",
             ],
             'xss_echo' => [
                 'pattern'  => '/echo\s+\$_(GET|POST|REQUEST)\[/',
                 'severity' => 'critical',
-                'message'  => 'Sortie directe de donnee utilisateur sans echappement (risque XSS)',
+                'message'  => 'Sortie directe de donnée utilisateur sans échappement (risque XSS)',
             ],
             'blade_raw_echo' => [
                 'pattern'  => '/\{!!\s*\$/',
                 'severity' => 'important',
-                'message'  => "Sortie Blade non echappee {!! !!} : verifier que la donnee est fiable (risque XSS)",
+                'message'  => "Sortie Blade non échappée {!! !!} : vérifier que la donnée est fiable (risque XSS)",
             ],
             'mass_assignment' => [
                 'pattern'  => '/::create\(\s*\$request->all\(\)\s*\)/',
@@ -60,33 +60,33 @@ class SecurityAnalyzer
             'hardcoded_secret' => [
                 'pattern'  => '/(api[_-]?key|secret|password|token)\s*=\s*["\'][A-Za-z0-9\/\+=_-]{12,}["\']/i',
                 'severity' => 'critical',
-                'message'  => 'Secret ou cle API potentiellement en dur dans le code source',
+                'message'  => 'Secret ou clé API potentiellement en dur dans le code source',
             ],
             'aws_key' => [
                 'pattern'  => '/AKIA[0-9A-Z]{16}/',
                 'severity' => 'critical',
-                'message'  => "Cle d'acces AWS (motif AKIA...) detectee dans le code",
+                'message'  => "Clé d'accès AWS (motif AKIA...) détectée dans le code",
             ],
             'stripe_key' => [
                 'pattern'  => '/(sk|pk)_(live|test)_[0-9a-zA-Z]{20,}/',
                 'severity' => 'critical',
-                'message'  => 'Cle API Stripe detectee dans le code',
+                'message'  => 'Clé API Stripe détectée dans le code',
             ],
             'debug_enabled' => [
                 'pattern'  => '/APP_DEBUG\s*=\s*true/i',
                 'severity' => 'important',
-                'message'  => 'APP_DEBUG actif : a desactiver imperativement en production',
+                'message'  => 'APP_DEBUG actif : à désactiver impérativement en production',
             ],
             'insecure_upload' => [
                 'pattern'  => '/move_uploaded_file\s*\(/',
                 'severity' => 'moderate',
-                'message'  => "Upload de fichier : verifier la validation d'extension, de mime-type et le renommage",
+                'message'  => "Upload de fichier : vérifier la validation d'extension, de mime-type et le renommage",
             ],
             'weak_csrf' => [
                 'pattern'  => '/@csrf/i',
                 'severity' => 'info',
-                'ignore'   => true, // presence positive, non remontee comme probleme
-                'message'  => 'Protection CSRF presente',
+                'ignore'   => true, // présence positive, non remontée comme problème
+                'message'  => 'Protection CSRF présente',
             ],
         ];
     }
@@ -99,10 +99,10 @@ class SecurityAnalyzer
         $issues = [];
 
         if (!in_array($lang, ['PHP', 'Blade'], true)) {
-            // certaines regles restent pertinentes en JS/Vue (secrets, eval)
+            // certaines règles restent pertinentes en JS/Vue (secrets, eval)
             $applicable = ['eval', 'hardcoded_secret', 'aws_key', 'stripe_key'];
         } else {
-            $applicable = null; // toutes les regles
+            $applicable = null; // toutes les règles
         }
 
         $lines = explode("\n", $content);

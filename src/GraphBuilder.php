@@ -3,8 +3,8 @@
 namespace Clarte;
 
 /**
- * Prepare les structures de donnees (labels/valeurs) consommees cote
- * client par le JavaScript embarque du rapport HTML pour dessiner les
+ * Prépare les structures de données (labels/valeurs) consommées côté
+ * client par le JavaScript embarqué du rapport HTML pour dessiner les
  * graphiques (canvas natif, sans librairie externe afin de garder le
  * rapport 100% autonome).
  */

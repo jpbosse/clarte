@@ -3,27 +3,27 @@
 namespace Clarte;
 
 /**
- * Resout la liste des fichiers modifies via Git, pour permettre une
- * analyse ciblee (--diff) plutot que sur l'ensemble du projet.
+ * Résout la liste des fichiers modifiés via Git, pour permettre une
+ * analyse ciblée (--diff) plutôt que sur l'ensemble du projet.
  *
  * Deux modes :
- *  - Sans reference : fichiers modifies (indexes ou non) par rapport a
+ *  - Sans référence : fichiers modifiés (indexes ou non) par rapport a
  *    HEAD, plus les nouveaux fichiers non suivis. Cas d'usage : "qu'est-ce
  *    que je viens de changer avant de committer".
- *  - Avec reference (ex: 'main', 'origin/main') : fichiers qui different
- *    entre le point de divergence avec cette reference et HEAD
- *    (equivalent a `git diff --name-only base...HEAD`). Cas d'usage :
+ *  - Avec référence (ex: 'main', 'origin/main') : fichiers qui diffèrent
+ *    entre le point de divergence avec cette référence et HEAD
+ *    (équivalent a `git diff --name-only base...HEAD`). Cas d'usage :
  *    analyser uniquement les changements d'une branche/PR en CI.
  *
- * Retourne null si le projet n'est pas un depot Git ou si Git echoue
- * (non installe, HEAD inexistant sur un repo vide, reference invalide...),
- * auquel cas l'appelant doit se replier sur une analyse complete plutot
- * que de conclure a tort "aucun fichier modifie".
+ * Retourne null si le projet n'est pas un depot Git ou si Git échoué
+ * (non installé, HEAD inexistant sur un repo vide, référence invalide...),
+ * auquel cas l'appelant doit se replier sur une analyse complète plutôt
+ * que de conclure à tort "aucun fichier modifié".
  */
 class GitDiffResolver
 {
     /**
-     * @return list<string>|null Chemins relatifs (POSIX) des fichiers modifies, ou null si indeterminable.
+     * @return list<string>|null Chemins relatifs (POSIX) des fichiers modifiés, ou null si indéterminable.
      */
     public function changedFiles(string $projectPath, ?string $baseRef = null): ?array
     {

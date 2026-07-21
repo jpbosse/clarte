@@ -3,7 +3,7 @@
 namespace Clarte;
 
 /**
- * Export des resultats dans differents formats (JSON, Markdown, CSV).
+ * Export des résultats dans différents formats (JSON, Markdown, CSV).
  */
 class Exporter
 {
@@ -29,13 +29,13 @@ class Exporter
         $lines[] = '';
         $lines[] = "Genere le " . date('d/m/Y H:i:s');
         $lines[] = '';
-        $lines[] = "## Synthese";
+        $lines[] = "## Synthèse";
         $lines[] = '';
         $lines[] = $summary['narrative'];
         $lines[] = '';
         $lines[] = "**Score global : {$summary['global_score']}/100**";
         $lines[] = '';
-        $lines[] = "| Categorie | Score |";
+        $lines[] = "| Catégorie | Score |";
         $lines[] = "|---|---|";
         foreach ($summary['scores'] as $section => $score) {
             $lines[] = "| " . ucfirst($section) . " | {$score}/10 |";
@@ -47,7 +47,7 @@ class Exporter
         $lines[] = "- Taille totale : {$statistics['total_size_human']}";
         $lines[] = "- Lignes de code : {$statistics['total_lines']}";
         $lines[] = '';
-        $lines[] = "## Top priorites";
+        $lines[] = "## Top priorités";
         $lines[] = '';
         foreach (array_slice($summary['top_priorities'], 0, 20) as $issue) {
             $lines[] = "- [{$issue['severity']}] {$issue['file']}:{$issue['line']} — {$issue['message']}";
@@ -63,7 +63,7 @@ class Exporter
     {
         $fh = @fopen($path, 'w');
         if ($fh === false) {
-            $this->warn("Export CSV impossible, ouverture du fichier refusee (permissions ou espace disque) : {$path}");
+            $this->warn("Export CSV impossible, ouverture du fichier refusée (permissions ou espace disque) : {$path}");
             return;
         }
 

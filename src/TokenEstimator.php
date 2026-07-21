@@ -3,9 +3,9 @@
 namespace Clarte;
 
 /**
- * Estimation approximative du nombre de tokens d'un texte, sans dependance
- * a une bibliotheque de tokenisation exacte (tiktoken, etc.).
- * Regle empirique : ~1 token pour 3.5 a 4 caracteres de code source.
+ * Estimation approximative du nombre de tokens d'un texte, sans dépendance
+ * à une bibliothèque de tokenisation exacte (tiktoken, etc.).
+ * Règle empirique : ~1 token pour 3.5 à 4 caractères de code source.
  */
 class TokenEstimator
 {

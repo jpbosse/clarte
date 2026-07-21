@@ -3,9 +3,9 @@
 namespace Clarte;
 
 /**
- * Construit la synthese executive : score global, points forts,
- * top des priorites (les problemes a corriger en premier pour le
- * meilleur gain de qualite), et checklist "avant mise en production".
+ * Construit la synthèse exécutive : score global, points forts,
+ * top des priorités (les problèmes à corriger en premier pour le
+ * meilleur gain de qualité), et checklist "avant mise en production".
  */
 class SummaryBuilder
 {
@@ -37,7 +37,7 @@ class SummaryBuilder
             + ($averageScores['architecture'] * 0.20)
             + ($averageScores['documentation'] * 0.10),
             1
-        ) * 10; // ramene sur 100
+        ) * 10; // ramené sur 100
 
         $priorities = $this->prioritize($allIssues);
         $hotFiles = $this->detectHotFiles($fileResults);
@@ -54,7 +54,7 @@ class SummaryBuilder
             'issues_by_severity' => $this->countBySeverity($allIssues),
             'production_checklist' => $productionChecklist,
             'narrative'       => $this->buildNarrative($averageScores, $allIssues),
-            // Transparence de la notation : methodologie + detail chiffre reel
+            // Transparence de la notation : méthodologie + détail chiffré réel
             'methodology'      => $explainer->methodology(),
             'score_details'    => $explainer->explainScores($fileResults, $averageScores),
             'severity_legend'  => $explainer->severityLegend(),
@@ -108,13 +108,13 @@ class SummaryBuilder
 
         $secretIssues = array_filter($allIssues, fn($i) => in_array($i['rule'] ?? '', ['hardcoded_secret', 'aws_key', 'stripe_key'], true));
         $checklist[] = [
-            'label' => 'Aucun secret/cle API en dur dans le code',
+            'label' => 'Aucun secret/clé API en dur dans le code',
             'ok'    => count($secretIssues) === 0,
         ];
 
         $criticalCount = count(array_filter($allIssues, fn($i) => ($i['severity'] ?? '') === 'critical'));
         $checklist[] = [
-            'label' => 'Aucune vulnerabilite critique detectee',
+            'label' => 'Aucune vulnérabilité critique détectée',
             'ok'    => $criticalCount === 0,
         ];
 
@@ -123,7 +123,7 @@ class SummaryBuilder
             $dependencyResult['npm']['warnings'] ?? []
         );
         $checklist[] = [
-            'label' => 'Dependances avec contraintes de version maitrisees',
+            'label' => 'Dépendances avec contraintes de version maîtrisées',
             'ok'    => count(array_filter($looseDeps, fn($w) => $w['severity'] === 'moderate')) === 0,
         ];
 
@@ -135,9 +135,9 @@ class SummaryBuilder
             || ($dependencyResult['npm']['osv']['scanned'] ?? false);
         $checklist[] = [
             'label' => $osvScanned
-                ? 'Aucune vulnerabilite connue (OSV.dev) sur les dependances'
-                : 'Vulnerabilites connues (OSV.dev) : scan non effectue (reseau indisponible ou desactive)',
-            'ok'    => $osvScanned ? count($osvFindings) === 0 : true, // n'echoue pas la checklist si le scan n'a pas pu avoir lieu
+                ? 'Aucune vulnérabilité connue (OSV.dev) sur les dépendances'
+                : 'Vulnérabilités connues (OSV.dev) : scan non effectué (réseau indisponible ou desactive)',
+            'ok'    => $osvScanned ? count($osvFindings) === 0 : true, // n'échoué pas la checklist si le scan n'a pas pu avoir lieu
         ];
 
         return $checklist;
@@ -149,13 +149,13 @@ class SummaryBuilder
         $importantCount = count(array_filter($allIssues, fn($i) => ($i['severity'] ?? '') === 'important'));
 
         $securityPart = $criticalCount > 0
-            ? "la securite ({$criticalCount} vulnerabilite(s) critique(s) a traiter en priorite)"
-            : "une securite globalement maitrisee";
+            ? "la sécurité ({$criticalCount} vulnérabilité(s) critique(s) à traiter en priorité)"
+            : "une sécurité globalement maîtrisée";
 
         $qualityLevel = $scores['quality'] >= 8 ? 'bonne' : ($scores['quality'] >= 6 ? 'correcte' : 'a renforcer');
 
-        return "Le projet presente une qualite de code {$qualityLevel} (score qualite : {$scores['quality']}/10). "
-            . "Les principaux points d'attention concernent {$securityPart}, ainsi que {$importantCount} probleme(s) important(s) "
-            . "d'architecture ou de performance repartis dans le projet. Les priorites sont detaillees ci-dessous.";
+        return "Le projet présente une qualité de code {$qualityLevel} (score qualité : {$scores['quality']}/10). "
+            . "Les principaux points d'attention concernent {$securityPart}, ainsi que {$importantCount} problème(s) important(s) "
+            . "d'architecture ou de performance répartis dans le projet. Les priorités sont détaillées ci-dessous.";
     }
 }

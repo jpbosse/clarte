@@ -3,8 +3,8 @@
 namespace Clarte;
 
 /**
- * Evalue la couverture documentaire : presence de PHPDoc sur les classes
- * et methodes publiques, densite de commentaires, presence d'un README
+ * Evalue la couverture documentaire : présence de PHPDoc sur les classes
+ * et méthodes publiques, densité de commentaires, présence d'un README
  * au niveau du projet.
  */
 class DocumentationAnalyzer

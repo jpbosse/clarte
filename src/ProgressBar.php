@@ -52,7 +52,7 @@ class ProgressBar
             $percent * 100,
             $eta,
             $item,
-            str_repeat(' ', 10) // efface les residus de ligne precedente
+            str_repeat(' ', 10) // efface les résidus de ligne précédente
         ));
 
         if ($this->current >= $this->total) {
@@ -78,6 +78,6 @@ class ProgressBar
     public function finish(): void
     {
         $this->current = $this->total;
-        $this->render('termine');
+        $this->render('terminé');
     }
 }

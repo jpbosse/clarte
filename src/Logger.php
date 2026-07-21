@@ -3,7 +3,7 @@
 namespace Clarte;
 
 /**
- * Journalisation simple, horodatee, vers fichier + sortie standard optionnelle.
+ * Journalisation simple, horodatée, vers fichier + sortie standard optionnelle.
  */
 class Logger
 {
@@ -47,14 +47,14 @@ class Logger
     public function startStep(string $name): void
     {
         $this->stepTimers[$name] = microtime(true);
-        $this->info("Debut de l'etape : {$name}");
+        $this->info("Début de l'étape : {$name}");
     }
 
     public function endStep(string $name): float
     {
         $start = $this->stepTimers[$name] ?? microtime(true);
         $duration = microtime(true) - $start;
-        $this->info(sprintf("Fin de l'etape : %s (%.2fs)", $name, $duration));
+        $this->info(sprintf("Fin de l'étape : %s (%.2fs)", $name, $duration));
         return $duration;
     }
 

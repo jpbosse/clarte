@@ -4,9 +4,9 @@ namespace Clarte;
 
 /**
  * Cache disque base sur le hash du contenu de chaque fichier analyse.
- * Permet la reprise apres interruption et l'analyse incrementale :
- * si un fichier n'a pas change depuis la derniere analyse, son resultat
- * est reutilise sans nouvel appel IA.
+ * Permet la reprise après interruption et l'analyse incrémentale :
+ * si un fichier n'a pas changé depuis la dernière analyse, son résultat
+ * est réutilisé sans nouvel appel IA.
  */
 class Cache
 {
@@ -48,7 +48,7 @@ class Cache
     }
 
     /**
-     * Retourne le resultat en cache pour ce fichier si son hash n'a pas
+     * Retourne le résultat en cache pour ce fichier si son hash n'a pas
      * change, sinon null.
      */
     public function get(string $relativePath, string $currentHash): ?array

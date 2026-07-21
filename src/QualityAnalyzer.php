@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Qualite generale du code : TODO/FIXME/HACK, code mort probable
- * (fonctions privees jamais appelees dans le meme fichier - heuristique
+ * Qualité générale du code : TODO/FIXME/HACK, code mort probable
+ * (fonctions privées jamais appelées dans le même fichier - heuristique
  * locale, pas d'analyse cross-fichiers), duplication de blocs simples,
- * variables mal nommees.
+ * variables mal nommées.
  */
 class QualityAnalyzer
 {
@@ -38,7 +38,7 @@ class QualityAnalyzer
     private function detectPoorNaming(string $content): array
     {
         $issues = [];
-        // variables a une seule lettre (hors compteurs de boucle usuels i, j, k)
+        // variables à une seule lettre (hors compteurs de boucle usuels i, j, k)
         if (preg_match_all('/\$([a-hl-z])\b\s*=/', $content, $matches, PREG_OFFSET_CAPTURE)) {
             $seen = [];
             foreach ($matches[1] as $match) {
@@ -69,7 +69,7 @@ class QualityAnalyzer
         foreach ($lines as $i => $line) {
             $trimmed = trim($line);
             if (strlen($trimmed) < 25 || str_starts_with($trimmed, '//') || str_starts_with($trimmed, '*')) {
-                continue; // ignore les lignes triviales/commentaires
+                continue; // on ignore les lignes triviales/commentaires
             }
             $normalized[$trimmed][] = $i + 1;
         }
@@ -80,7 +80,7 @@ class QualityAnalyzer
                     'rule'     => 'duplicated_line',
                     'severity' => 'moderate',
                     'message'  => sprintf(
-                        'Ligne dupliquee %d fois (lignes %s) : ' . mb_substr($text, 0, 60) . '...',
+                        'Ligne dupliquée %d fois (lignes %s) : ' . mb_substr($text, 0, 60) . '...',
                         count($occurrences),
                         implode(', ', array_slice($occurrences, 0, 5))
                     ),
@@ -105,7 +105,7 @@ class QualityAnalyzer
                     $issues[] = [
                         'rule'     => 'unused_private_method',
                         'severity' => 'moderate',
-                        'message'  => "Methode privee {$methodName}() jamais appelee dans ce fichier (code potentiellement mort)",
+                        'message'  => "Methode privee {$methodName}() jamais appelée dans ce fichier (code potentiellement mort)",
                         'line'     => $line,
                     ];
                 }

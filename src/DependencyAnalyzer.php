@@ -3,12 +3,12 @@
 namespace Clarte;
 
 /**
- * Analyse des dependances declarees (composer.json / package.json).
+ * Analyse des dépendances déclarées (composer.json / package.json).
  *
- * Depuis v1.1 : interroge reellement OSV.dev (base de vulnerabilites
- * publiques, alimentee entre autres par les GitHub Security Advisories)
+ * Depuis v1.1 : interroge réellement OSV.dev (base de vulnérabilités
+ * publiques, alimentée entre autres par les GitHub Security Advisories)
  * via VulnerabilityScanner, en plus des heuristiques locales (contraintes
- * de version trop larges, paquets sensibles a surveiller).
+ * de version trop larges, paquets sensibles à surveiller).
  */
 class DependencyAnalyzer
 {
@@ -70,13 +70,13 @@ class DependencyAnalyzer
             if ($constraint === '*' || $constraint === 'latest') {
                 $warnings[] = [
                     'severity' => 'moderate',
-                    'message'  => "{$name} : contrainte de version non bornee ('{$constraint}'), risque de rupture ou de derive non maitrisee",
+                    'message'  => "{$name} : contrainte de version non bornée ('{$constraint}'), risque de rupture ou de dérive non maîtrisée",
                 ];
             }
             if (in_array($name, self::SENSITIVE_PACKAGES, true)) {
                 $warnings[] = [
                     'severity' => 'info',
-                    'message'  => "{$name} : dependance sensible, verifier manuellement la presence de CVE connues (OSV.dev, GitHub Advisories)",
+                    'message'  => "{$name} : dépendance sensible, vérifier manuellement la présence de CVE connues (OSV.dev, GitHub Advisories)",
                 ];
             }
         }

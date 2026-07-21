@@ -4,9 +4,9 @@ namespace Clarte;
 
 /**
  * Orchestre l'ensemble du pipeline d'analyse : scan -> analyse statique
- * par fichier (+ IA optionnelle) -> agregation -> synthese -> export.
+ * par fichier (+ IA optionnelle) -> agrégation -> synthèse -> export.
  * C'est la classe "chef d'orchestre", volontairement fine : chaque
- * responsabilite reelle est deleguee a une classe dediee (SRP).
+ * responsabilité réelle est déléguée à une classe dédiée (SRP).
  */
 class AnalysisEngine
 {
@@ -93,8 +93,8 @@ class AnalysisEngine
             $changed = $this->gitDiffResolver->changedFiles($projectPath, $diffBase);
             if ($changed === null) {
                 $this->logger->warning(
-                    "Mode --diff demande mais impossible de determiner les fichiers modifies "
-                    . "(projet hors depot Git, Git absent, ou reference invalide) : analyse complete effectuee a la place."
+                    "Mode --diff demande mais impossible de determiner les fichiers modifiés "
+                    . "(projet hors depot Git, Git absent, ou référence invalide) : analyse complète effectuée à la place."
                 );
             } else {
                 $changedSet = array_flip($changed);
@@ -134,7 +134,7 @@ class AnalysisEngine
                 $previousSnapshot
             );
         } else {
-            $this->logger->info("Mode --diff : historique non mis a jour (score partiel, non comparable a une analyse complete).");
+            $this->logger->info("Mode --diff : historique non mis à jour (score partiel, non comparable à une analyse complète).");
         }
 
         $graphs = [
@@ -147,7 +147,7 @@ class AnalysisEngine
         $projectName = basename(rtrim($projectPath, '/'));
         $outputDir = $this->config['output']['dir'];
         if (!is_dir($outputDir) && !@mkdir($outputDir, 0777, true) && !is_dir($outputDir)) {
-            $this->logger->warning("Impossible de creer le dossier de sortie (permissions ou espace disque) : {$outputDir}. Aucun rapport ne pourra etre ecrit.");
+            $this->logger->warning("Impossible de créer le dossier de sortie (permissions ou espace disque) : {$outputDir}. Aucun rapport ne pourra être écrit.");
         }
 
         $this->logger->startStep('Generation des rapports');
@@ -157,7 +157,7 @@ class AnalysisEngine
             $html = $this->htmlReport->render($statistics, $summary, $fileResults, $dependencyResult, $comparison, $graphs, $projectName);
             $htmlPath = $outputDir . '/rapport.html';
             if (@file_put_contents($htmlPath, $html) === false) {
-                $this->logger->warning("Ecriture du rapport HTML impossible (permissions ou espace disque) : {$htmlPath}");
+                $this->logger->warning("Écriture du rapport HTML impossible (permissions ou espace disque) : {$htmlPath}");
             }
 
             if (($this->config['output']['pdf'] ?? false) && is_file($htmlPath)) {
@@ -177,7 +177,7 @@ class AnalysisEngine
         $this->logger->endStep('Generation des rapports');
 
         $this->logger->info(sprintf(
-            'Analyse terminee : %d fichiers, score global %s/100, %d appels IA (%d tokens estimes)',
+            'Analyse terminée : %d fichiers, score global %s/100, %d appels IA (%d tokens estimés)',
             count($files), $summary['global_score'], $this->aiCallsCount, $this->aiTokensCount
         ));
 
@@ -192,10 +192,10 @@ class AnalysisEngine
     }
 
     /**
-     * Applique les surcharges de .clarte-rules.php a une liste d'issues :
-     * retire celles dont la regle est desactivee, ajuste la severite de
-     * celles concernees par un override. Ne fait rien si aucune regle
-     * personnalisee n'est chargee (comportement inchange par defaut).
+     * Applique les surcharges de .clarte-rules.php à une liste d'issues :
+     * retire celles dont la règle est désactivée, ajuste la sévérité de
+     * celles concernées par un override. Ne fait rien si aucune règle
+     * personnalisée n'est chargée (comportement inchangé par défaut).
      */
     private function applyProjectRules(array $issues): array
     {
@@ -260,13 +260,13 @@ class AnalysisEngine
             if ($response['success']) {
                 $ai = $response['data'];
             } else {
-                $this->logger->warning("Analyse IA echouee pour {$file['relative']} : {$response['error']}");
+                $this->logger->warning("Analyse IA échouée pour {$file['relative']} : {$response['error']}");
             }
         }
 
-        // Les fichiers Markdown sont conserves en clair pour etre lisibles
-        // directement dans le rapport (README, docs, changelog...), a la
-        // maniere de GitHub. Plafonne pour ne pas alourdir le rapport HTML.
+        // Les fichiers Markdown sont conservés en clair pour être lisibles
+        // directement dans le rapport (README, docs, changelog...), à la
+        // manière de GitHub. Plafonne pour ne pas alourdir le rapport HTML.
         $markdownContent = null;
         if ($file['lang'] === 'Markdown' && $file['size'] <= 120_000) {
             $markdownContent = $content;

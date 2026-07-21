@@ -8,21 +8,21 @@
  *   php clarte.php <chemin_du_projet> [options]
  *
  * Options :
- *   --ai                 Active l'analyse assistee par IA (necessite un token,
+ *   --ai                 Active l'analyse assistée par IA (nécessite un token,
  *                         voir config.php -> ai.token_env_var)
- *   --no-cache            Ignore le cache et reanalyse tout
+ *   --no-cache            Ignore le cache et réanalyse tout
  *   --ci                  Mode CI/CD : code de sortie non nul si des
- *                         problemes critiques sont detectes
- *   --diff                 Analyse uniquement les fichiers modifies (indexes,
+ *                         problèmes critiques sont détectés
+ *   --diff                 Analyse uniquement les fichiers modifiés (indexes,
  *                         non indexes, ou nouveaux) par rapport a HEAD.
- *                         Necessite que <chemin_du_projet> soit un depot Git ;
- *                         a defaut, analyse complete effectuee avec un avertissement.
- *   --diff=<ref>            Analyse uniquement les fichiers qui different entre
+ *                         Nécessite que <chemin_du_projet> soit un depot Git ;
+ *                         à défaut, analyse complète effectuée avec un avertissement.
+ *   --diff=<ref>            Analyse uniquement les fichiers qui diffèrent entre
  *                         <ref> (ex: main, origin/main) et HEAD. Utile en CI
  *                         pour analyser uniquement les changements d'une PR.
- *   --pdf                  Genere aussi reports/rapport.pdf a partir du HTML
- *                         (necessite wkhtmltopdf ou Chrome/Chromium installe ;
- *                         ignore proprement avec un avertissement sinon).
+ *   --pdf                  Génère aussi reports/rapport.pdf à partir du HTML
+ *                         (nécessite wkhtmltopdf ou Chrome/Chromium installé ;
+ *                         ignoré proprement avec un avertissement sinon).
  *   --config=chemin.php   Utilise un fichier de configuration alternatif
  *
  * Exemple :
@@ -31,7 +31,7 @@
  *   php clarte.php /var/www/mon-projet --diff=origin/main --ci   # en CI sur une PR
  */
 
-require __DIR__ . '/vendor/autoload.php'; // genere par `composer install` (autoload PSR-4)
+require __DIR__ . '/vendor/autoload.php'; // génère par `composer install` (autoload PSR-4)
 
 use Clarte\AnalysisEngine;
 use Clarte\Cache;
@@ -89,7 +89,7 @@ $result = $engine->run($config['project_path'], $useAi, $diffOnly, $diffBase);
 
 echo PHP_EOL;
 echo "========================================" . PHP_EOL;
-echo " Analyse terminee" . PHP_EOL;
+echo " Analyse terminée" . PHP_EOL;
 echo "========================================" . PHP_EOL;
 if ($result['summary']['partial_analysis']['active'] ?? false) {
     echo " Mode              : --diff (analyse partielle)" . PHP_EOL;
@@ -102,13 +102,13 @@ if ($result['pdf_result'] !== null) {
     if ($result['pdf_result']['success']) {
         echo " Rapport PDF       : {$result['output_dir']}/rapport.pdf (via {$result['pdf_result']['tool']})" . PHP_EOL;
     } else {
-        echo " Rapport PDF       : non genere — {$result['pdf_result']['message']}" . PHP_EOL;
+        echo " Rapport PDF       : non généré — {$result['pdf_result']['message']}" . PHP_EOL;
     }
 }
 echo "========================================" . PHP_EOL;
 
 if ($ciMode && $result['summary']['issues_by_severity']['critical'] > 0) {
-    fwrite(STDERR, "\n[CI] Echec : des problemes critiques ont ete detectes.\n");
+    fwrite(STDERR, "\n[CI] Échec : des problèmes critiques ont été détectés.\n");
     exit(2);
 }
 

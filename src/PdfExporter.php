@@ -4,27 +4,27 @@ namespace Clarte;
 
 /**
  * Convertit le rapport HTML en PDF en s'appuyant sur un outil externe
- * deja present sur la machine, plutot que de reimplementer un moteur de
+ * déjà présent sur la machine, plutôt que de réimplémenter un moteur de
  * mise en page PDF maison (recommandation du README v1).
  *
- * Outils supportes, par ordre de preference :
+ * Outils supportés, par ordre de préférence :
  *  1. Chrome / Chromium en mode headless (--print-to-pdf) : moteur JS
  *     moderne complet, indispensable ici car le rapport HTML est une
- *     petite application JS (graphiques canvas, sections generees
+ *     petite application JS (graphiques canvas, sections générées
  *     dynamiquement) qui utilise des syntaxes ES6+ (const, fonctions
- *     flechees, template literals).
- *  2. wkhtmltopdf, en repli SEULEMENT : son moteur WebKit embarque est
- *     trop ancien pour executer ce JS (erreur de syntaxe qui bloque tout
+ *     fléchées, template literals).
+ *  2. wkhtmltopdf, en repli SEULEMENT : son moteur WebKit embarqué est
+ *     trop ancien pour exécuter ce JS (erreur de syntaxe qui bloque tout
  *     le script). Le PDF produit sera donc incomplet — seul le contenu
- *     genere cote serveur (essentiellement le dashboard) apparaitra, les
- *     graphiques et les sections generees en JS (statistiques, securite,
+ *     génère côté serveur (essentiellement le dashboard) apparaîtra, les
+ *     graphiques et les sections générées en JS (statistiques, sécurité,
  *     performance, liste des fichiers...) resteront vides. Un
- *     avertissement explicite est renvoye dans ce cas pour que la
- *     personne sache qu'il vaut mieux installer Chrome/Chromium plutot
- *     que de croire le PDF complet a tort.
+ *     avertissement explicite est renvoyé dans ce cas pour que la
+ *     personne sache qu'il vaut mieux installer Chrome/Chromium plutôt
+ *     que de croire le PDF complet à tort.
  *
- * Si aucun des deux n'est trouve dans le PATH, la conversion est ignoree
- * proprement (le rapport HTML reste genere) et un message explique
+ * Si aucun des deux n'est trouvé dans le PATH, la conversion est ignorée
+ * proprement (le rapport HTML reste généré) et un message explique
  * comment installer l'un des deux outils.
  */
 class PdfExporter
@@ -52,7 +52,7 @@ class PdfExporter
             if ($result['success']) {
                 return $result;
             }
-            $this->logger->warning("Chrome/Chromium detecte ({$chrome}) mais la conversion a echoue : {$result['message']} — tentative avec wkhtmltopdf si disponible.");
+            $this->logger->warning("Chrome/Chromium détecté ({$chrome}) mais la conversion a échoué : {$result['message']} — tentative avec wkhtmltopdf si disponible.");
         }
 
         $wkhtmltopdf = $this->findBinary(['wkhtmltopdf']);
@@ -60,9 +60,9 @@ class PdfExporter
             @unlink($pdfPath);
             $result = $this->runWkhtmltopdf($wkhtmltopdf, $htmlPath, $pdfPath);
             if ($result['success']) {
-                $warning = "PDF genere via wkhtmltopdf, mais son moteur JavaScript est trop ancien pour "
-                    . "executer les scripts du rapport (graphiques, sections Statistiques/Securite/Performance/"
-                    . "Fichiers generees dynamiquement). Le PDF ne contiendra probablement que le tableau de "
+                $warning = "PDF génère via wkhtmltopdf, mais son moteur JavaScript est trop ancien pour "
+                    . "exécuter les scripts du rapport (graphiques, sections Statistiques/Securite/Performance/"
+                    . "Fichiers générées dynamiquement). Le PDF ne contiendra probablement que le tableau de "
                     . "bord. Pour un PDF complet, installez Chrome ou Chromium.";
                 $this->logger->warning($warning);
                 $result['message'] = $warning;
@@ -70,8 +70,8 @@ class PdfExporter
             return $result;
         }
 
-        $message = "Export PDF ignore : aucun outil de conversion trouve (Chrome/Chromium ni wkhtmltopdf). "
-            . "Installez de preference Chrome/Chromium pour un PDF complet, par exemple : "
+        $message = "Export PDF ignoré : aucun outil de conversion trouvé (Chrome/Chromium ni wkhtmltopdf). "
+            . "Installez de préférence Chrome/Chromium pour un PDF complet, par exemple : "
             . "'sudo apt install chromium-browser' (ou 'sudo apt install wkhtmltopdf' en repli partiel). "
             . "Le rapport HTML reste disponible normalement.";
         $this->logger->warning($message);
@@ -85,7 +85,7 @@ class PdfExporter
         exec($cmd, $output, $returnCode);
 
         if ($returnCode !== 0 || !is_file($pdfPath)) {
-            $message = "Echec de la conversion PDF via wkhtmltopdf : " . implode(' ', $output);
+            $message = "Échec de la conversion PDF via wkhtmltopdf : " . implode(' ', $output);
             $this->logger->warning($message);
             return ['success' => false, 'tool' => 'wkhtmltopdf', 'message' => $message];
         }
@@ -104,10 +104,10 @@ class PdfExporter
             . ' ' . escapeshellarg($fileUrl) . ' 2>&1';
         exec($cmd, $output, $returnCode);
 
-        // Certaines versions de Chrome renvoient un code 0 meme en cas d'echec partiel :
-        // on verifie donc en plus la presence effective et la taille du fichier produit.
+        // Certaines versions de Chrome renvoient un code 0 même en cas d'échec partiel :
+        // on vérifie donc en plus la présence effective et la taille du fichier produit.
         if (!is_file($pdfPath) || filesize($pdfPath) === 0) {
-            $message = "Echec de la conversion PDF via Chrome/Chromium headless : " . implode(' ', $output);
+            $message = "Échec de la conversion PDF via Chrome/Chromium headless : " . implode(' ', $output);
             $this->logger->warning($message);
             return ['success' => false, 'tool' => 'chrome-headless', 'message' => $message];
         }

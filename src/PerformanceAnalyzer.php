@@ -3,8 +3,8 @@
 namespace Clarte;
 
 /**
- * Detection heuristique de motifs de performance a risque : requetes en
- * boucle (N+1 Laravel), boucles imbriquees, chargements memoire excessifs.
+ * Détection heuristique de motifs de performance à risque : requêtes en
+ * boucle (N+1 Laravel), boucles imbriquées, chargements mémoire excessifs.
  */
 class PerformanceAnalyzer
 {
@@ -47,7 +47,7 @@ class PerformanceAnalyzer
                     $issues[] = [
                         'rule'     => 'query_in_loop',
                         'severity' => 'moderate',
-                        'message'  => "Requete Eloquent/DB executee a l'interieur d'une boucle (risque N+1)",
+                        'message'  => "Requête Eloquent/DB exécutée à l'intérieur d'une boucle (risque N+1)",
                         'line'     => $i + 1,
                         'excerpt'  => trim($line),
                     ];
@@ -65,14 +65,14 @@ class PerformanceAnalyzer
     private function detectN1Laravel(string $content): array
     {
         $issues = [];
-        // relation Eloquent utilisee sans eager-loading visible (with())
+        // relation Eloquent utilisée sans eager-loading visible (with())
         if (preg_match_all('/\$(\w+)->(\w+)(?:\(\))?->/', $content, $matches, PREG_OFFSET_CAPTURE)) {
-            // heuristique legere : simple signal, pas une preuve formelle
+            // heuristique légère : simple signal, pas une preuve formelle
             if (!str_contains($content, '::with(') && !str_contains($content, '->with(') && count($matches[0]) > 3) {
                 $issues[] = [
                     'rule'     => 'n1_missing_eager_load',
                     'severity' => 'info',
-                    'message'  => "Acces frequent a des relations sans eager-loading detecte (->with()) : verifier le risque N+1",
+                    'message'  => "Accès fréquent à des relations sans eager-loading détecté (->with()) : vérifier le risque N+1",
                     'line'     => 1,
                     'excerpt'  => '',
                 ];
@@ -95,7 +95,7 @@ class PerformanceAnalyzer
                     $issues[] = [
                         'rule'     => 'nested_loops',
                         'severity' => 'moderate',
-                        'message'  => 'Boucles imbriquees sur 3 niveaux ou plus : complexite et cout potentiellement eleves',
+                        'message'  => 'Boucles imbriquées sur 3 niveaux ou plus : complexité et coût potentiellement élevés',
                         'line'     => $i + 1,
                         'excerpt'  => trim($line),
                     ];
@@ -122,7 +122,7 @@ class PerformanceAnalyzer
                     $issues[] = [
                         'rule'     => 'heavy_blade_includes',
                         'severity' => 'info',
-                        'message'  => 'Nombre eleve de @include/@component dans une seule vue : envisager une decomposition',
+                        'message'  => 'Nombre élevé de @include/@component dans une seule vue : envisager une décomposition',
                         'line'     => $i + 1,
                         'excerpt'  => trim($line),
                     ];

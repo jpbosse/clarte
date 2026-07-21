@@ -3,10 +3,10 @@
 namespace Clarte;
 
 /**
- * Analyse structurelle : taille des classes/methodes, God Object,
- * nombre de parametres, indices de couplage fort et de responsabilites
+ * Analyse structurelle : taille des classes/méthodes, God Object,
+ * nombre de paramètres, indices de couplage fort et de responsabilités
  * multiples (SRP). Analyse par regex sur la structure PHP, volontairement
- * simple plutot que par AST complet, pour rester dependance-free.
+ * simple plutôt que par AST complet, pour rester dépendance-free.
  */
 class ArchitectureAnalyzer
 {
@@ -31,12 +31,12 @@ class ArchitectureAnalyzer
             $issues[] = [
                 'rule'     => 'file_too_long',
                 'severity' => 'moderate',
-                'message'  => "Fichier de {$totalLines} lignes : depasse le seuil de {$this->thresholds['file_max_lines']} lignes",
+                'message'  => "Fichier de {$totalLines} lignes : dépasse le seuil de {$this->thresholds['file_max_lines']} lignes",
                 'line'     => 1,
             ];
         }
 
-        // Detection des classes et de leur etendue (accolade ouvrante/fermante)
+        // Détection des classes et de leur étendue (accolade ouvrante/fermante)
         if (preg_match_all('/^\s*(?:abstract\s+|final\s+)?class\s+(\w+)/m', $content, $classMatches, PREG_OFFSET_CAPTURE)) {
             foreach ($classMatches[1] as $match) {
                 [$className, $offset] = $match;
@@ -58,14 +58,14 @@ class ArchitectureAnalyzer
                     $issues[] = [
                         'rule'     => 'god_class',
                         'severity' => 'important',
-                        'message'  => "Classe {$className} : {$methodCount} methodes, potentiel God Object / God Controller",
+                        'message'  => "Classe {$className} : {$methodCount} méthodes, potentiel God Object / God Controller",
                         'line'     => $startLine,
                     ];
                 }
             }
         }
 
-        // Detection des methodes trop longues et avec trop de parametres
+        // Détection des méthodes trop longues et avec trop de paramètres
         if (preg_match_all('/function\s+(\w+)\s*\(([^)]*)\)\s*(?::\s*\??\w+\s*)?\{/', $content, $methodMatches, PREG_OFFSET_CAPTURE)) {
             foreach ($methodMatches[1] as $index => $match) {
                 [$methodName, $offset] = $match;
@@ -93,20 +93,20 @@ class ArchitectureAnalyzer
                     $issues[] = [
                         'rule'     => 'too_many_params',
                         'severity' => 'info',
-                        'message'  => "Methode {$methodName}() : {$paramCount} parametres (seuil : {$this->thresholds['max_params']}), envisager un DTO/objet de valeur",
+                        'message'  => "Methode {$methodName}() : {$paramCount} paramètres (seuil : {$this->thresholds['max_params']}), envisager un DTO/objet de valeur",
                         'line'     => $startLine,
                     ];
                 }
             }
         }
 
-        // Violation MVC simple : requetes SQL directes dans un controleur
+        // Violation MVC simple : requêtes SQL directes dans un contrôleur
         if (str_contains($content, 'class') && preg_match('/class\s+\w*Controller/', $content)) {
             if (preg_match('/DB::(select|statement|table)\s*\(/', $content)) {
                 $issues[] = [
                     'rule'     => 'db_query_in_controller',
                     'severity' => 'info',
-                    'message'  => "Requete DB directe dans un controleur : envisager de deplacer la logique vers un Model/Repository/Service",
+                    'message'  => "Requête DB directe dans un contrôleur : envisager de déplacer la logique vers un Model/Repository/Service",
                     'line'     => 1,
                 ];
             }
@@ -116,8 +116,8 @@ class ArchitectureAnalyzer
     }
 
     /**
-     * Extrait le bloc {...} correspondant a la premiere accolade ouvrante
-     * trouvee a partir de $fromOffset.
+     * Extrait le bloc {...} correspondant à la première accolade ouvrante
+     * trouvée à partir de $fromOffset.
      */
     private function extractBlock(string $content, int $fromOffset): string
     {
