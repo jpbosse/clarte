@@ -21,6 +21,7 @@ class AnalysisEngine
     private ArchitectureAnalyzer $architectureAnalyzer;
     private QualityAnalyzer $qualityAnalyzer;
     private DocumentationAnalyzer $documentationAnalyzer;
+    private RelationshipAnalyzer $relationshipAnalyzer;
     private DependencyAnalyzer $dependencyAnalyzer;
     private GitDiffResolver $gitDiffResolver;
     private Statistics $statistics;
@@ -29,6 +30,7 @@ class AnalysisEngine
     private SummaryBuilder $summaryBuilder;
     private History $history;
     private GraphBuilder $graphBuilder;
+    private RelationshipGraphBuilder $relationshipGraphBuilder;
     private HtmlReport $htmlReport;
     private Exporter $exporter;
     private PdfExporter $pdfExporter;
@@ -67,6 +69,7 @@ class AnalysisEngine
         $this->architectureAnalyzer = new ArchitectureAnalyzer($config['thresholds']);
         $this->qualityAnalyzer = new QualityAnalyzer();
         $this->documentationAnalyzer = new DocumentationAnalyzer();
+        $this->relationshipAnalyzer = new RelationshipAnalyzer();
         $this->dependencyAnalyzer = new DependencyAnalyzer($config['dependencies'] ?? [], $config['cache']['path']);
         $this->gitDiffResolver = new GitDiffResolver();
         $this->statistics = new Statistics();
@@ -75,6 +78,7 @@ class AnalysisEngine
         $this->summaryBuilder = new SummaryBuilder();
         $this->history = new History($config['history']['path'], $config['history']['enabled'], $config['history']['keep_last']);
         $this->graphBuilder = new GraphBuilder();
+        $this->relationshipGraphBuilder = new RelationshipGraphBuilder();
         $this->htmlReport = new HtmlReport();
         $this->exporter = new Exporter($this->logger);
         $this->pdfExporter = new PdfExporter($this->logger);
@@ -137,11 +141,15 @@ class AnalysisEngine
             $this->logger->info("Mode --diff : historique non mis à jour (score partiel, non comparable à une analyse complète).");
         }
 
+        $relationships = array_map(fn($r) => $r['relationship'] ?? null, $fileResults);
+        $relationshipGraph = $this->relationshipGraphBuilder->build($relationships, $fileResults);
+
         $graphs = [
-            'languages' => $this->graphBuilder->languageDistribution($statistics),
-            'severity'  => $this->graphBuilder->severityDistribution($summary),
-            'scores'    => $this->graphBuilder->scoresBySection($summary),
-            'sizes'     => $this->graphBuilder->fileSizeDistribution($statistics),
+            'languages'    => $this->graphBuilder->languageDistribution($statistics),
+            'severity'     => $this->graphBuilder->severityDistribution($summary),
+            'scores'       => $this->graphBuilder->scoresBySection($summary),
+            'sizes'        => $this->graphBuilder->fileSizeDistribution($statistics),
+            'relationships' => $relationshipGraph,
         ];
 
         $projectName = basename(rtrim($projectPath, '/'));
@@ -292,6 +300,7 @@ class AnalysisEngine
                 'documentation' => $documentation,
             ],
             'ai' => $ai,
+            'relationship' => $this->relationshipAnalyzer->analyze($content, $file['relative'], $file['lang']),
         ];
 
         $this->cache->set($file['relative'], $hash, $result);

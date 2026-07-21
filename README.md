@@ -241,6 +241,31 @@ Activer avec `--pdf` ou `output.pdf => true` dans `config.php`. Si aucun
 outil n'est trouvé, l'analyse continue normalement (le HTML reste généré)
 avec un message expliquant comment installer Chrome/Chromium.
 
+## Organigramme du projet
+
+La section « Organigramme » du rapport cartographie les classes PHP du
+projet, groupées par dossier, reliées par héritage (`extends`),
+implémentation (`implements`) et import local (`use`). Chaque classe est
+colorée selon son niveau de risque (basé sur les problèmes déjà détectés
+par les autres analyseurs), et les **points d'entrée** — contrôleurs
+HTTP, commandes CLI, jobs de file d'attente, middlewares, form requests —
+sont marqués d'un badge ⚡, puisque ce sont les endroits où des données
+externes pénètrent dans l'application, donc prioritaires pour une
+relecture de sécurité.
+
+Pensée pour une **lecture posée** plutôt qu'un coup d'œil : cliquer une
+classe isole ses connexions directes (le reste s'estompe), un filtre
+permet d'afficher ou masquer les imports simples (souvent nombreux et
+moins structurants que l'héritage), et un zoom permet de naviguer un
+projet avec beaucoup de classes.
+
+Limite assumée : extraction par regex (pas un vrai parseur PHP), comme le
+reste de l'outil. Une classe déclarée sur plusieurs lignes de façon
+inhabituelle, ou un `extends`/`implements` vers une classe ambiguë (même
+nom court dans plusieurs namespaces du projet), peut ne pas être reliée
+dans le graphe — dans le doute, l'outil ne trace pas de lien plutôt que
+d'en tracer un faux.
+
 ## Vérification des dépendances (CVE réelles)
 
 `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec les
@@ -266,10 +291,9 @@ fonctionnalités, elles sont clairement identifiées ici :
   pool de workers (via `pcntl_fork` ou plusieurs processus PHP CLI en
   parallèle avec répartition de la file) est envisagé pour les très gros
   projets.
-- **Heatmap de risque et graphe de dépendances interactif avancé** : les
-  données nécessaires existent déjà (issues par dossier, imports), mais
-  le rendu visuel avancé (force-directed graph, heatmap calendaire)
-  n'est pas encore implémenté dans `HtmlReport`.
+- ~~**Graphe de dépendances entre classes**~~ : implémenté (voir section
+  « Organigramme du projet » ci-dessus). Reste en attente : une
+  heatmap calendaire de l'évolution du risque dans le temps.
 - **Analyse de flux de données (taint analysis)** : `SecurityAnalyzer`
   détecte des motifs à risque par expressions régulières, pas un vrai
   suivi de flux source → sink. Pour une couverture exhaustive, complétez

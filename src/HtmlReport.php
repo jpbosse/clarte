@@ -57,6 +57,7 @@ class HtmlReport
       <a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a>
       <a href="#statistiques" class="nav-link" data-section="statistiques">📁 Statistiques</a>
       <a href="#architecture" class="nav-link" data-section="architecture">🏗 Architecture</a>
+      <a href="#organigramme" class="nav-link" data-section="organigramme">🗺 Organigramme</a>
       <a href="#sécurité" class="nav-link" data-section="sécurité">🔒 Securite</a>
       <a href="#performance" class="nav-link" data-section="performance">⚡ Performance</a>
       <a href="#qualité" class="nav-link" data-section="qualité">🧹 Qualité</a>
@@ -105,6 +106,12 @@ class HtmlReport
     <section id="architecture" class="panel">
       <h1>Architecture</h1>
       <div id="architecture-content" class="issues-list"></div>
+    </section>
+
+    <section id="organigramme" class="panel">
+      <h1>Organigramme du projet</h1>
+      <p class="narrative">Carte des classes du projet, groupées par dossier, reliées par héritage (<code>extends</code>), implémentation (<code>implements</code>) et import (<code>use</code>). La couleur indique le niveau de risque de chaque classe (base sur les problèmes déjà détectés dans les autres sections). Pensé pour une lecture posée plutôt qu'un coup d'œil : cliquez une classe pour isoler ses connexions directes.</p>
+      <div id="organigramme-content"></div>
     </section>
 
     <section id="sécurité" class="panel">
@@ -451,6 +458,33 @@ canvas { max-width: 100%; }
 .comparison-box { margin-top: 20px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
 .partial-banner { margin-bottom: 16px; padding: 14px 16px; background: rgba(234, 179, 8, 0.12); border: 1px solid #eab308; border-radius: var(--radius); color: var(--text); }
 .partial-banner code { background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 4px; }
+
+/* ---- Organigramme ---- */
+.og-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.og-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.og-zoom { display: flex; align-items: center; gap: 8px; }
+.og-zoom button { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; font-size: 16px; line-height: 1; }
+.og-zoom button:hover { background: var(--accent); color: white; }
+.og-zoom-level, #og-zoom-level { font-size: 13px; color: var(--text-muted); min-width: 40px; text-align: center; }
+.og-legend-bar { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); }
+.og-legend-item { display: flex; align-items: center; gap: 5px; }
+.og-legend-item i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.og-stats { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+.og-scroll-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); max-height: 75vh; }
+.og-canvas { position: relative; padding: 24px; width: max-content; transition: transform 0.15s ease; }
+.og-edges { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+.og-groups { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; position: relative; }
+.og-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; min-width: 190px; }
+.og-group-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
+.og-group-count { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.og-group-nodes { display: flex; flex-direction: column; gap: 6px; }
+.og-node { background: var(--bg); border: 1px solid var(--border); border-left: 4px solid #94a3b8; border-radius: 6px; padding: 6px 10px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: opacity 0.15s ease, transform 0.1s ease; }
+.og-node:hover { transform: translateX(2px); border-color: var(--accent); }
+.og-node-label { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.og-node-kind { font-size: 10px; color: var(--text-muted); font-style: italic; }
+.og-badge { font-size: 11px; }
+.og-node.og-selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+.og-node.og-dim { opacity: 0.25; }
 
 /* ---- Impression / export PDF ----
    Le rapport est une SPA à onglets (un seul .panel visible à la fois).
@@ -879,6 +913,164 @@ function renderDependencies() {
   container.innerHTML = block('Composer (PHP)', d.composer) + block('npm (JS)', d.npm);
 }
 
+// ---- Organigramme (carte des classes, groupees par dossier) ----
+// Pense pour une lecture posee : positionnement par flux CSS (pas de
+// simulation physique), overlay SVG pour les liens trace apres layout
+// du DOM (comme les canvas de graphiques), surbrillance au clic pour
+// isoler les connexions d'une classe.
+function renderOrganigramme() {
+  const graph = REPORT_DATA.graphs.relationships;
+  const container = document.getElementById('organigramme-content');
+  if (!graph || !graph.nodes || graph.nodes.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted)">Aucune classe PHP détectée pour construire un organigramme (projet sans code PHP, ou uniquement des fichiers procéduraux).</p>';
+    return;
+  }
+
+  const riskColors = { critical: '#ef4444', high: '#f97316', moderate: '#eab308', low: '#3b82f6', clean: '#22c55e' };
+  const riskLabels = { critical: 'Critique', high: 'Élevé', moderate: 'Modéré', low: 'Faible', clean: 'Propre' };
+  const entryPointLabels = {
+    http_controller: "Contrôleur HTTP — reçoit des requêtes utilisateur",
+    cli_command: "Commande CLI — reçoit des arguments en ligne de commande",
+    queue_job: "Job de file d'attente — traite des payloads asynchrones",
+    event_listener: "Listener d'événement",
+    middleware: "Middleware HTTP",
+    form_request: "Form Request — valide une entrée utilisateur",
+  };
+  const edgeStyles = {
+    extends:    { color: '#6366f1', dash: '',      width: 2   },
+    implements: { color: '#a855f7', dash: '5,4',   width: 1.5 },
+    uses:       { color: '#94a3b8', dash: '2,3',   width: 1   },
+  };
+
+  let showUses = false;
+  let selectedNode = null;
+  let scale = 1;
+
+  const byGroup = {};
+  graph.nodes.forEach(n => { (byGroup[n.group] = byGroup[n.group] || []).push(n); });
+  const sortedGroups = Object.keys(byGroup).sort();
+
+  function nodeHtml(n) {
+    const color = riskColors[n.risk_level] || '#94a3b8';
+    const badge = n.entry_point_type ? `<span class="og-badge" title="${esc(entryPointLabels[n.entry_point_type] || '')}">⚡</span>` : '';
+    const kind = n.is_interface ? 'interface' : (n.is_trait ? 'trait' : (n.is_abstract ? 'abstraite' : ''));
+    const tooltip = `${n.file} — ${n.issue_count} problème(s) détecté(s)${kind ? ' — classe ' + kind : ''}`;
+    return `<div class="og-node" data-id="${esc(n.id)}" tabindex="0" style="border-left-color:${color}" title="${esc(tooltip)}">
+      <span class="og-node-label">${badge}${esc(n.label)}</span>
+      ${kind ? `<span class="og-node-kind">${kind}</span>` : ''}
+    </div>`;
+  }
+
+  const legendHtml = Object.keys(riskColors).map(k =>
+    `<span class="og-legend-item"><i style="background:${riskColors[k]}"></i>${riskLabels[k]}</span>`
+  ).join('') + `<span class="og-legend-item">⚡ Point d'entrée</span>`;
+
+  container.innerHTML = `
+    <div class="og-toolbar">
+      <label class="og-toggle"><input type="checkbox" id="og-toggle-uses"> Afficher aussi les imports simples (liens « uses », plus nombreux)</label>
+      <div class="og-zoom">
+        <button type="button" id="og-zoom-out" aria-label="Zoom arrière">−</button>
+        <span id="og-zoom-level">100%</span>
+        <button type="button" id="og-zoom-in" aria-label="Zoom avant">+</button>
+      </div>
+    </div>
+    <div class="og-legend-bar">${legendHtml}</div>
+    <p class="og-stats">${graph.stats.total_classes} classe(s) détectée(s), dont <strong>${graph.stats.entry_points}</strong> point(s) d'entrée (à auditer en priorité). Cliquez une classe pour isoler ses connexions ; cliquez à nouveau pour tout réafficher.</p>
+    <div class="og-scroll-wrapper">
+      <div class="og-canvas" id="og-canvas">
+        <svg id="og-edges" class="og-edges"></svg>
+        <div class="og-groups" id="og-groups"></div>
+      </div>
+    </div>
+  `;
+
+  const groupsContainer = document.getElementById('og-groups');
+  sortedGroups.forEach(group => {
+    const wrap = document.createElement('div');
+    wrap.className = 'og-group';
+    const nodesHtml = byGroup[group].map(nodeHtml).join('');
+    wrap.innerHTML = `<div class="og-group-title">${esc(group)} <span class="og-group-count">(${byGroup[group].length})</span></div><div class="og-group-nodes">${nodesHtml}</div>`;
+    groupsContainer.appendChild(wrap);
+  });
+
+  function drawEdges() {
+    const svg = document.getElementById('og-edges');
+    const canvas = document.getElementById('og-canvas');
+    if (!svg || !canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const w = canvas.scrollWidth, h = canvas.scrollHeight;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+    const positions = {};
+    canvas.querySelectorAll('.og-node').forEach(el => {
+      const r = el.getBoundingClientRect();
+      positions[el.dataset.id] = {
+        x: (r.left - canvasRect.left) / scale + (r.width / 2) / scale,
+        y: (r.top - canvasRect.top) / scale + (r.height / 2) / scale,
+      };
+    });
+
+    let svgContent = `<defs>
+      <marker id="og-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path>
+      </marker>
+    </defs>`;
+
+    graph.edges.forEach(e => {
+      if (e.type === 'uses' && !showUses) return;
+      const from = positions[e.from], to = positions[e.to];
+      if (!from || !to) return;
+      const style = edgeStyles[e.type] || edgeStyles.uses;
+      const involved = selectedNode && (e.from === selectedNode || e.to === selectedNode);
+      const opacity = selectedNode ? (involved ? 1 : 0.06) : 0.5;
+      const width = involved ? style.width + 1.5 : style.width;
+      const marker = e.type !== 'uses' ? ' marker-end="url(#og-arrow)"' : '';
+      svgContent += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${style.color}" stroke-width="${width}" stroke-dasharray="${style.dash}" opacity="${opacity}"${marker}></line>`;
+    });
+
+    svg.innerHTML = svgContent;
+  }
+
+  function applyZoom() {
+    document.getElementById('og-canvas').style.transform = `scale(${scale})`;
+    document.getElementById('og-canvas').style.transformOrigin = 'top left';
+    document.getElementById('og-zoom-level').textContent = Math.round(scale * 100) + '%';
+    requestAnimationFrame(drawEdges);
+  }
+
+  function applySelection() {
+    canvas_nodes().forEach(el => {
+      const id = el.dataset.id;
+      if (!selectedNode) { el.classList.remove('og-dim', 'og-selected'); return; }
+      if (id === selectedNode) { el.classList.add('og-selected'); el.classList.remove('og-dim'); return; }
+      const connected = graph.edges.some(e => (e.from === selectedNode && e.to === id) || (e.to === selectedNode && e.from === id));
+      el.classList.toggle('og-dim', !connected);
+      el.classList.remove('og-selected');
+    });
+    drawEdges();
+  }
+  function canvas_nodes() { return document.querySelectorAll('#og-groups .og-node'); }
+
+  canvas_nodes().forEach(el => {
+    el.addEventListener('click', () => {
+      selectedNode = (selectedNode === el.dataset.id) ? null : el.dataset.id;
+      applySelection();
+    });
+  });
+
+  document.getElementById('og-toggle-uses').addEventListener('change', (e) => {
+    showUses = e.target.checked;
+    drawEdges();
+  });
+  document.getElementById('og-zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.15); applyZoom(); });
+  document.getElementById('og-zoom-out').addEventListener('click', () => { scale = Math.max(0.4, scale - 0.15); applyZoom(); });
+
+  window.addEventListener('resize', () => safeRun('organigramme (resize)', drawEdges));
+  requestAnimationFrame(drawEdges);
+}
+
 // ---- Fichiers (accordeon) ----
 let currentFilter = 'all';
 function renderFiles(searchTerm = '') {
@@ -1082,6 +1274,7 @@ safeRun('graphiques', renderCharts);
 window.addEventListener('resize', () => safeRun('graphiques (resize)', renderCharts));
 safeRun('statistiques', renderStats);
 safeRun('catégorie architecture', () => renderCategory('architecture', 'architecture-content'));
+safeRun('organigramme', renderOrganigramme);
 safeRun('catégorie sécurité', () => renderCategory('security', 'sécurité-content'));
 safeRun('catégorie performance', () => renderCategory('performance', 'performance-content'));
 safeRun('catégorie qualité', () => renderCategory('quality', 'qualité-content'));
