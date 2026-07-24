@@ -97,6 +97,7 @@ class HtmlReport
         <div class="chart-card"><h3>Taille des fichiers</h3><canvas id="chart-sizes" width="360" height="240"></canvas></div>
       </div>
       {$comparisonHtml}
+      <div id="calendar-heatmap-content"></div>
     </section>
 
     <section id="statistiques" class="panel">
@@ -512,6 +513,21 @@ canvas { max-width: 100%; }
 .cm-badge-method { background: rgba(234, 179, 8, 0.15); color: #eab308; }
 .cm-file { color: var(--text-muted); font-size: 12px; margin-left: auto; }
 
+/* ---- Heatmap calendaire ---- */
+.cal-box { margin-top: 20px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
+.cal-box h3 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+.cal-scroll { overflow-x: auto; padding-bottom: 4px; }
+.cal-grid { display: flex; gap: 3px; width: max-content; }
+.cal-col { display: flex; flex-direction: column; gap: 3px; }
+.cal-daylabels { margin-right: 4px; }
+.cal-daylabel { width: 12px; height: 12px; font-size: 9px; color: var(--text-muted); line-height: 12px; }
+.cal-cell { width: 12px; height: 12px; border-radius: 3px; }
+.cal-cell.cal-empty { background: var(--border); opacity: 0.4; }
+.cal-legend { display: flex; align-items: center; gap: 5px; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+.cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.cal-legend-empty { margin-left: 14px; display: flex; align-items: center; gap: 5px; }
+.cal-legend-empty i.cal-empty { background: var(--border); opacity: 0.4; }
+
 /* ---- Impression / export PDF ----
    Le rapport est une SPA à onglets (un seul .panel visible à la fois).
    Un outil de conversion PDF (wkhtmltopdf, Chrome --print-to-pdf) ne
@@ -873,6 +889,88 @@ function renderCharts() {
   drawBarChart('chart-severity', g.severity.labels, g.severity.values, g.severity.labels.map(l => severityColors[l] || '#6366f1'));
   drawBarChart('chart-scores', g.scores.labels, g.scores.values);
   drawBarChart('chart-sizes', g.sizes.labels, g.sizes.values);
+}
+
+// ---- Heatmap calendaire (evolution du risque dans le temps) ----
+// Type "contribution graph" GitHub, mais colore par score plutot que par
+// volume d'activite. Une case par jour civil ou une analyse a eu lieu ;
+// jours sans analyse laisses vides (pas de case, pas d'interpolation).
+function renderCalendarHeatmap() {
+  const heatmap = REPORT_DATA.graphs.calendar_heatmap;
+  const container = document.getElementById('calendar-heatmap-content');
+  if (!container) return;
+
+  const days = heatmap && heatmap.days ? heatmap.days : {};
+  const dayKeys = Object.keys(days);
+
+  if (dayKeys.length < 2) {
+    container.innerHTML = `<div class="cal-box"><h3>Historique du score</h3><p style="color:var(--text-muted)">Pas encore assez d'historique pour une heatmap (revenez apres quelques analyses supplementaires — au moins 2 jours distincts necessaires).</p></div>`;
+    return;
+  }
+
+  function scoreColor(score) {
+    if (score >= 90) return '#22c55e';
+    if (score >= 75) return '#3b82f6';
+    if (score >= 60) return '#eab308';
+    if (score >= 40) return '#f97316';
+    return '#ef4444';
+  }
+
+  // Construit une grille complete (y compris les jours sans analyse, en gris)
+  // du premier au dernier jour connu, alignee sur les semaines (lundi -> dimanche).
+  const first = new Date(heatmap.first_date + 'T00:00:00');
+  const last = new Date(heatmap.last_date + 'T00:00:00');
+  const start = new Date(first);
+  const startDow = (start.getDay() + 6) % 7; // 0 = lundi
+  start.setDate(start.getDate() - startDow);
+
+  const weeks = [];
+  let cursor = new Date(start);
+  let week = [];
+  while (cursor <= last || week.length > 0) {
+    const key = cursor.toISOString().slice(0, 10);
+    week.push({ date: key, info: days[key] || null });
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
+    cursor.setDate(cursor.getDate() + 1);
+    if (cursor > last && week.length === 0) break;
+  }
+  if (week.length > 0) {
+    while (week.length < 7) week.push({ date: null, info: null });
+    weeks.push(week);
+  }
+
+  const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  let html = `<div class="cal-box"><h3>Historique du score (${dayKeys.length} jour(s) d'analyse)</h3><div class="cal-scroll"><div class="cal-grid">`;
+
+  html += `<div class="cal-col cal-daylabels">` + dayLabels.map(l => `<div class="cal-daylabel">${l}</div>`).join('') + `</div>`;
+
+  weeks.forEach(w => {
+    html += `<div class="cal-col">`;
+    w.forEach(d => {
+      if (!d.info) {
+        html += `<div class="cal-cell cal-empty" title="${d.date ? esc(d.date) + ' — aucune analyse' : ''}"></div>`;
+      } else {
+        const color = scoreColor(d.info.score);
+        const tooltip = `${d.date} — score ${d.info.score}/100, ${d.info.issues} alerte(s), ${d.info.runs} analyse(s)`;
+        html += `<div class="cal-cell" style="background:${color}" title="${esc(tooltip)}"></div>`;
+      }
+    });
+    html += `</div>`;
+  });
+
+  html += `</div></div>
+    <div class="cal-legend">
+      <span>Moins bon</span>
+      <i style="background:#ef4444"></i><i style="background:#f97316"></i><i style="background:#eab308"></i><i style="background:#3b82f6"></i><i style="background:#22c55e"></i>
+      <span>Meilleur</span>
+      <span class="cal-legend-empty"><i class="cal-empty"></i> Pas d'analyse ce jour</span>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
 }
 // ---- Statistiques (section) ----
 function renderStats() {
@@ -1466,6 +1564,7 @@ function safeRun(label, fn) {
 }
 
 safeRun('graphiques', renderCharts);
+safeRun('heatmap calendaire', renderCalendarHeatmap);
 window.addEventListener('resize', () => safeRun('graphiques (resize)', renderCharts));
 safeRun('statistiques', renderStats);
 safeRun('catégorie architecture', () => renderCategory('architecture', 'architecture-content'));

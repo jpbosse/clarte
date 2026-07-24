@@ -160,6 +160,7 @@ class AnalysisEngine
             'sizes'        => $this->graphBuilder->fileSizeDistribution($statistics),
             'relationships' => $relationshipGraph,
             'dead_code'    => $deadCode,
+            'calendar_heatmap' => $this->graphBuilder->calendarHeatmap($this->history->all()),
         ];
 
         $projectName = basename(rtrim($projectPath, '/'));

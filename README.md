@@ -313,6 +313,27 @@ nom court dans plusieurs namespaces du projet), peut ne pas être reliée
 dans le graphe — dans le doute, l'outil ne trace pas de lien plutôt que
 d'en tracer un faux.
 
+## Historique du score (heatmap calendaire)
+
+Le tableau de bord affiche, sous la comparaison avec la dernière analyse,
+un historique visuel façon « contribution graph » GitHub : une case par
+jour où une analyse a eu lieu, colorée selon le score obtenu ce jour-là
+(vert = excellent, rouge = à surveiller), les jours sans analyse restant
+vides plutôt que d'être interpolés à tort.
+
+Si plusieurs analyses ont lieu le même jour, seule la **dernière** compte
+pour la couleur de la case (l'état le plus à jour de la journée) ; le
+survol de la souris indique le score exact, le nombre d'alertes, et le
+nombre d'analyses effectuées ce jour-là.
+
+**Limite assumée** : basée sur `reports/history/`, dont la profondeur est
+limitée par `history.keep_last` dans `config.php` (30 exécutions par
+défaut, pas 30 jours calendaires — si vous analysez plusieurs fois par
+jour, l'historique visible en calendrier sera donc plus court). Augmentez
+cette valeur si vous voulez un historique plus long. Nécessite au moins
+2 jours d'analyse distincts pour s'afficher ; sinon, un message l'indique
+simplement au lieu d'un graphique vide ou trompeur.
+
 ## Détection de code mort (inter-fichiers)
 
 La section « Code mort » du rapport liste les **classes jamais
@@ -396,8 +417,9 @@ fonctionnalités, elles sont clairement identifiées ici :
 - ~~**Workers parallèles réels**~~ : implémentée (voir section « Analyse
   parallèle » ci-dessous).
 - ~~**Graphe de dépendances entre classes**~~ : implémenté (voir section
-  « Organigramme du projet » ci-dessus). Reste en attente : une
-  heatmap calendaire de l'évolution du risque dans le temps.
+  « Organigramme du projet » ci-dessus).
+- ~~**Heatmap calendaire de l'évolution du risque**~~ : implémentée (voir
+  section « Historique du score » ci-dessous).
 - ~~**Analyse de flux de données (taint analysis)**~~ : implémentée
   (`TaintAnalyzer`, voir section dédiée ci-dessous), mais avec une portée
   volontairement limitée à l'intérieur d'une seule fonction/méthode (pas
