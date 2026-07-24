@@ -1,0 +1,41 @@
+{
+  "name": "clarte-diagnostics",
+  "displayName": "Clarté — Diagnostics",
+  "description": "Affiche dans VS Code les problèmes déjà détectés par Clarté (audit de code PHP/Laravel), directement dans l'éditeur.",
+  "version": "0.1.0",
+  "publisher": "jpbosse",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpbosse/clarte"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Linters", "Other"],
+  "keywords": ["php", "laravel", "audit", "securite", "clarte"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "clarte.reloadReport",
+        "title": "Clarté : Recharger le rapport"
+      },
+      {
+        "command": "clarte.openHtmlReport",
+        "title": "Clarté : Ouvrir le rapport HTML complet"
+      }
+    ],
+    "configuration": {
+      "title": "Clarté",
+      "properties": {
+        "clarte.reportPath": {
+          "type": "string",
+          "default": "reports/rapport.json",
+          "description": "Chemin vers le rapport.json généré par Clarté, relatif à la racine du dossier ouvert dans VS Code."
+        }
+      }
+    }
+  }
+}

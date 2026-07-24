@@ -359,13 +359,24 @@ fonctionnalités, elles sont clairement identifiées ici :
   de suivi inter-procédural ni conscience des branches if/else). Pour une
   couverture exhaustive, complétez avec PHPStan + un plugin sécurité, ou
   Psalm en mode taint-analysis.
-- **Plugin éditeur** (VS Code / PhpStorm) : afficher les problèmes
-  directement dans l'éditeur plutôt que d'attendre le rapport HTML n'est
-  pas encore développé.
+- ~~**Plugin éditeur**~~ : une extension VS Code simple (lecture du
+  rapport, voir « Extension VS Code » ci-dessus) est implémentée.
+  Restent en attente : le déclenchement automatique de l'analyse depuis
+  l'éditeur (elle reste pilotée depuis le terminal pour l'instant), et
+  un équivalent pour PhpStorm.
 
 Aucune de ces limites n'empêche l'usage quotidien de l'outil : elles sont
 documentées pour que vous sachiez précisément ce qui est solide
 aujourd'hui et ce qui reste à construire.
+
+## Extension VS Code
+
+Un lecteur simple du rapport (`editor-extensions/vscode/`) affiche les
+problèmes déjà détectés par Clarté directement dans l'éditeur — lignes
+soulignées, panneau *Problems*, score dans la barre de statut — sans
+lancer l'analyse elle-même (qui reste pilotée depuis le terminal comme
+d'habitude). Voir le
+[README dédié](editor-extensions/vscode/README.md) pour l'installation.
 
 ## Extensibilité
 
