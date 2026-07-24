@@ -51,6 +51,8 @@ Options :
 | `--diff` | Analyse uniquement les fichiers modifiés (indexés, non indexés, nouveaux) par rapport à HEAD |
 | `--diff=<ref>` | Analyse uniquement les fichiers qui diffèrent entre `<ref>` (ex: `origin/main`) et HEAD — idéal en CI sur une PR |
 | `--pdf` | Génère aussi `reports/rapport.pdf` (Chrome/Chromium recommandé ; wkhtmltopdf en repli produit un PDF incomplet, voir limites ci-dessous) |
+| `--parallel` | Analyse en parallèle sur plusieurs processus PHP (auto-détecte le nombre de cœurs). Incompatible avec `--ai` |
+| `--parallel=N` | Analyse en parallèle sur N processus précisément |
 | `--config=chemin.php` | Utilise un fichier de configuration alternatif |
 
 Le rapport est généré dans `reports/rapport.html` (+ `.json`, `.md`, `.csv`).
@@ -223,6 +225,51 @@ rapport.
 À ne pas confondre avec la section « Documentation (code) », qui évalue
 la couverture en commentaires PHPDoc du code source lui-même.
 
+## Analyse parallèle
+
+Sur un gros projet et une machine multi-cœurs, `--parallel` répartit
+l'analyse sur plusieurs processus PHP indépendants :
+
+```bash
+php clarte.php /chemin/projet --parallel          # auto-detecte le nombre de coeurs
+php clarte.php /chemin/projet --parallel=4        # force 4 processus
+```
+
+### Comment ça marche
+
+Le processus principal découpe la liste des fichiers en lots égaux, et
+relance `clarte.php` lui-même pour chaque lot, en mode « worker » caché
+(`--worker-batch=...`) — chaque worker analyse uniquement ses fichiers et
+écrit son résultat dans un fichier temporaire, sans générer de rapport ni
+écrire dans le cache. Le processus principal attend que tous les workers
+terminent, fusionne leurs résultats, puis poursuit normalement (dépendances,
+organigramme, rapport...) — y compris l'**écriture du cache, faite une
+seule fois, de façon centralisée**, pour éviter que plusieurs processus
+n'écrasent `cache/index.json` en même temps.
+
+Approche basée sur des processus séparés (`proc_open`), pas sur
+`pcntl_fork` : `pcntl` n'est pas toujours installé (souvent absent des
+hébergements mutualisés, absent sur Windows), alors que `proc_open` est
+disponible partout où PHP CLI l'est.
+
+### Robustesse
+
+Si le lancement des workers échoue entièrement (environnement restreint,
+etc.), l'outil se replie automatiquement sur une analyse séquentielle
+classique, avec un avertissement — jamais d'échec silencieux. Si
+certains workers échouent isolément, seuls **leurs** fichiers sont
+réanalysés en séquentiel par le processus principal pour compléter le
+résultat ; les fichiers déjà traités par les workers qui ont réussi ne
+sont pas repris.
+
+### Limite connue
+
+**Incompatible avec `--ai`** : le rate-limiting des appels IA
+(`GithubModel`) est pensé pour un seul processus. Combiner `--parallel`
+et `--ai` désactive automatiquement le mode parallèle (avec un
+avertissement) plutôt que de risquer de dépasser le débit prévu auprès
+du fournisseur d'IA.
+
 ## Export PDF
 
 `PdfExporter` s'appuie sur un outil externe déjà présent sur la machine :
@@ -346,10 +393,8 @@ fonctionnalités, elles sont clairement identifiées ici :
 
 - ~~**Détection de code mort inter-fichiers**~~ : implémentée (voir
   section « Détection de code mort » ci-dessous).
-- **Workers parallèles réels** : le mode CI actuel est séquentiel. Un vrai
-  pool de workers (via `pcntl_fork` ou plusieurs processus PHP CLI en
-  parallèle avec répartition de la file) est envisagé pour les très gros
-  projets.
+- ~~**Workers parallèles réels**~~ : implémentée (voir section « Analyse
+  parallèle » ci-dessous).
 - ~~**Graphe de dépendances entre classes**~~ : implémenté (voir section
   « Organigramme du projet » ci-dessus). Reste en attente : une
   heatmap calendaire de l'évolution du risque dans le temps.

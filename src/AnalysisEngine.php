@@ -88,7 +88,7 @@ class AnalysisEngine
         $this->pdfExporter = new PdfExporter($this->logger);
     }
 
-    public function run(string $projectPath, bool $useAi = false, bool $diffOnly = false, ?string $diffBase = null): array
+    public function run(string $projectPath, bool $useAi = false, bool $diffOnly = false, ?string $diffBase = null, int $parallelWorkers = 0): array
     {
         $this->logger->startStep('Scan du projet');
         $files = $this->scanner->scan($projectPath);
@@ -117,15 +117,19 @@ class AnalysisEngine
             }
         }
 
-        $progress = new ProgressBar(count($files), 'Analyse');
         $fileResults = [];
 
         $this->logger->startStep('Analyse des fichiers');
-        foreach ($files as $file) {
-            $progress->advance($file['relative']);
-            $fileResults[$file['relative']] = $this->analyzeFile($file, $useAi);
+        if ($parallelWorkers !== 0 && !$useAi && count($files) > 1) {
+            $fileResults = $this->runParallel($files, $parallelWorkers, $projectPath);
+        } else {
+            $progress = new ProgressBar(count($files), 'Analyse');
+            foreach ($files as $file) {
+                $progress->advance($file['relative']);
+                $fileResults[$file['relative']] = $this->analyzeFile($file, $useAi);
+            }
+            $progress->finish();
         }
-        $progress->finish();
         $this->logger->endStep('Analyse des fichiers');
 
         $statistics = $this->statistics->build($files, $fileResults, $projectPath);
@@ -234,7 +238,7 @@ class AnalysisEngine
         return $result;
     }
 
-    private function analyzeFile(array $file, bool $useAi): array
+    private function analyzeFile(array $file, bool $useAi, bool $skipCacheWrite = false): array
     {
         $content = @file_get_contents($file['path']);
         if ($content === false) {
@@ -312,9 +316,125 @@ class AnalysisEngine
             'relationship' => $this->relationshipAnalyzer->analyze($content, $file['relative'], $file['lang']),
         ];
 
-        $this->cache->set($file['relative'], $hash, $result);
+        if (!$skipCacheWrite) {
+            $this->cache->set($file['relative'], $hash, $result);
+        }
 
         return $result;
+    }
+
+    /**
+     * Analyse UNIQUEMENT les fichiers dont le chemin relatif figure dans
+     * $relativePaths, sans lancer le reste du pipeline (dependances,
+     * organigramme, rapport...). Utilise par le mode worker (--worker-batch)
+     * pour paralleliser l'analyse sur plusieurs processus PHP : chaque
+     * worker traite un sous-ensemble de fichiers et renvoie ses resultats,
+     * que le processus principal fusionne ensuite.
+     *
+     * L'ecriture du cache est volontairement differee (jamais faite ici) :
+     * plusieurs workers ecrivant simultanement dans cache/index.json
+     * ecraseraient leurs entrees respectives (dernier ecrivain gagne). Le
+     * processus principal se charge d'ecrire le cache de facon centralisee
+     * apres avoir fusionne tous les resultats.
+     *
+     * @param list<string> $relativePaths
+     * @return array<string, array>
+     */
+    public function analyzeSubset(string $projectPath, array $relativePaths): array
+    {
+        $wanted = array_flip($relativePaths);
+        $allFiles = $this->scanner->scan($projectPath);
+        $results = [];
+        foreach ($allFiles as $file) {
+            if (!isset($wanted[$file['relative']])) {
+                continue;
+            }
+            // Pas d'IA en mode worker : le rate-limiting de GithubModel est pense
+            // pour un seul processus ; plusieurs workers en parallele depasseraient
+            // le debit prevu de facon incontrolee. Documente comme limite connue.
+            $results[$file['relative']] = $this->analyzeFile($file, false, true);
+        }
+        return $results;
+    }
+
+    /**
+     * Ecrit dans le cache, de facon centralisee (un seul processus), les
+     * resultats obtenus par les workers paralleles. A appeler apres fusion
+     * de tous les resultats, jamais depuis un worker lui-meme.
+     *
+     * @param array<string, array> $fileResults cle = chemin relatif
+     */
+    public function writeCacheForResults(string $projectPath, array $fileResults): void
+    {
+        $allFiles = $this->scanner->scan($projectPath);
+        $byRelative = [];
+        foreach ($allFiles as $file) {
+            $byRelative[$file['relative']] = $file;
+        }
+        foreach ($fileResults as $relative => $result) {
+            if (!isset($byRelative[$relative])) {
+                continue;
+            }
+            $hash = $this->cache->fileHash($byRelative[$relative]['path']);
+            $this->cache->set($relative, $hash, $result);
+        }
+    }
+
+    /**
+     * Delegue l'analyse a plusieurs processus PHP via ParallelRunner.
+     * En cas d'echec total (impossible de lancer les workers) ou partiel
+     * (certains workers en erreur), les fichiers manquants sont completes
+     * en sequentiel par CE processus, pour ne jamais renvoyer un resultat
+     * incomplet meme si la parallelisation elle-meme a des ratés.
+     */
+    private function runParallel(array $files, int $parallelWorkers, string $projectPath): array
+    {
+        $workerCount = $parallelWorkers === -1 ? $this->detectCpuCount() : $parallelWorkers;
+        $configPath = $this->config['config_path'] ?? (__DIR__ . '/../config.php');
+
+        $parallelRunner = new ParallelRunner($this->logger);
+        $relativePaths = array_map(fn($f) => $f['relative'], $files);
+        $result = $parallelRunner->run($relativePaths, $workerCount, $projectPath, $configPath);
+
+        $totalFailure = ($result === null);
+        $fileResults = $totalFailure ? [] : $result['results'];
+
+        $missing = array_filter($files, fn($f) => !isset($fileResults[$f['relative']]));
+        if (!empty($missing)) {
+            if ($totalFailure) {
+                $this->logger->info('Analyse sequentielle (repli complet apres echec du mode parallele).');
+            } else {
+                $this->logger->info(sprintf('Completion sequentielle de %d fichier(s) non traites par les workers.', count($missing)));
+            }
+            $progress = new ProgressBar(count($missing), 'Analyse (repli sequentiel)');
+            foreach ($missing as $file) {
+                $progress->advance($file['relative']);
+                $fileResults[$file['relative']] = $this->analyzeFile($file, false);
+            }
+            $progress->finish();
+        }
+
+        // Ecriture centralisee du cache : jamais faite par les workers eux-memes
+        // (voir AnalysisEngine::analyzeSubset), pour eviter une course sur
+        // cache/index.json si plusieurs processus y ecrivaient en meme temps.
+        $this->writeCacheForResults($projectPath, $fileResults);
+
+        return $fileResults;
+    }
+
+    private function detectCpuCount(): int
+    {
+        if (function_exists('shell_exec')) {
+            $nproc = @shell_exec('nproc 2>/dev/null');
+            if ($nproc !== null && (int) trim($nproc) > 0) {
+                return (int) trim($nproc);
+            }
+            $sysctl = @shell_exec('sysctl -n hw.ncpu 2>/dev/null');
+            if ($sysctl !== null && (int) trim($sysctl) > 0) {
+                return (int) trim($sysctl);
+            }
+        }
+        return 4; // repli raisonnable si la detection echoue
     }
 
     private function emptyResult(array $file): array
