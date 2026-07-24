@@ -17,6 +17,7 @@ class AnalysisEngine
     private TokenEstimator $tokenEstimator;
     private Truncator $truncator;
     private SecurityAnalyzer $securityAnalyzer;
+    private TaintAnalyzer $taintAnalyzer;
     private PerformanceAnalyzer $performanceAnalyzer;
     private ArchitectureAnalyzer $architectureAnalyzer;
     private QualityAnalyzer $qualityAnalyzer;
@@ -66,6 +67,7 @@ class AnalysisEngine
         $this->tokenEstimator = new TokenEstimator();
         $this->truncator = new Truncator($config['truncate']['head_lines'], $config['truncate']['tail_lines']);
         $this->securityAnalyzer = new SecurityAnalyzer();
+        $this->taintAnalyzer = new TaintAnalyzer();
         $this->performanceAnalyzer = new PerformanceAnalyzer();
         $this->architectureAnalyzer = new ArchitectureAnalyzer($config['thresholds']);
         $this->qualityAnalyzer = new QualityAnalyzer();
@@ -255,7 +257,10 @@ class AnalysisEngine
 
         $lines = substr_count($content, "\n") + 1;
 
-        $security = $this->applyProjectRules($this->securityAnalyzer->analyze($content, $file['lang']));
+        $security = $this->applyProjectRules(array_merge(
+            $this->securityAnalyzer->analyze($content, $file['lang']),
+            $this->taintAnalyzer->analyze($content, $file['lang'])
+        ));
         $performance = $this->applyProjectRules($this->performanceAnalyzer->analyze($content, $file['lang']));
         $architecture = $this->applyProjectRules($this->architectureAnalyzer->analyze($content, $file['lang']));
         $quality = $this->applyProjectRules($this->qualityAnalyzer->analyze($content, $file['lang']));

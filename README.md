@@ -312,6 +312,31 @@ le réseau est indisponible. Réglages dans `config.php`
 (`dependencies.osv_*`). Nécessite l'extension `curl` et un accès réseau
 sortant vers `api.osv.dev`.
 
+## Analyse de flux de données (taint analysis)
+
+En complément des motifs à risque détectés par `SecurityAnalyzer` (qui
+signale la simple *présence* d'un point sensible, sans savoir si son
+argument est réellement dangereux), `TaintAnalyzer` trace précisément le
+trajet d'une donnée : d'une **source** externe non fiable (`$_GET`,
+`$_POST`, `$request->input()`...) jusqu'à un **point sensible** (requête
+SQL brute, exécution système, `eval()`, inclusion de fichier,
+`unserialize()`...), en tenant compte des fonctions qui neutralisent le
+risque en chemin (`intval()`, `htmlspecialchars()`, `escapeshellarg()`,
+cast `(int)`...).
+
+Un problème remonté par `TaintAnalyzer` indique explicitement la variable
+concernée et la ligne d'où provient la donnée — plus actionnable qu'une
+simple alerte "ce type d'appel est risqué".
+
+**Portée assumée** : suivi limité au corps d'**une seule fonction ou
+méthode** à la fois (pas de suivi inter-procédural : si une fonction
+transmet une donnée tainted à une autre fonction, le lien n'est pas
+suivi), et analyse **séquentielle sans conscience des branches**
+(if/else, boucles) — une donnée assainie dans une branche peut être
+considérée à tort comme toujours assainie ensuite. Une variable non
+signalée n'est donc pas forcément sûre (faux négatif possible) : c'est
+le compromis assumé pour éviter de saturer le rapport de faux positifs.
+
 ## Limites connues (honnêtes) et pistes d'évolution
 
 Cette version est fonctionnelle et testée de bout en bout, mais certaines
@@ -328,10 +353,12 @@ fonctionnalités, elles sont clairement identifiées ici :
 - ~~**Graphe de dépendances entre classes**~~ : implémenté (voir section
   « Organigramme du projet » ci-dessus). Reste en attente : une
   heatmap calendaire de l'évolution du risque dans le temps.
-- **Analyse de flux de données (taint analysis)** : `SecurityAnalyzer`
-  détecte des motifs à risque par expressions régulières, pas un vrai
-  suivi de flux source → sink. Pour une couverture exhaustive, complétez
-  avec PHPStan + un plugin sécurité, ou Psalm en mode taint-analysis.
+- ~~**Analyse de flux de données (taint analysis)**~~ : implémentée
+  (`TaintAnalyzer`, voir section dédiée ci-dessous), mais avec une portée
+  volontairement limitée à l'intérieur d'une seule fonction/méthode (pas
+  de suivi inter-procédural ni conscience des branches if/else). Pour une
+  couverture exhaustive, complétez avec PHPStan + un plugin sécurité, ou
+  Psalm en mode taint-analysis.
 - **Plugin éditeur** (VS Code / PhpStorm) : afficher les problèmes
   directement dans l'éditeur plutôt que d'attendre le rapport HTML n'est
   pas encore développé.
