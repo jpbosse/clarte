@@ -266,6 +266,42 @@ nom court dans plusieurs namespaces du projet), peut ne pas être reliée
 dans le graphe — dans le doute, l'outil ne trace pas de lien plutôt que
 d'en tracer un faux.
 
+## Détection de code mort (inter-fichiers)
+
+La section « Code mort » du rapport liste les **classes jamais
+référencées ailleurs** dans le projet (aucun `new`, aucun appel statique,
+aucun `extends`/`implements`/`use` d'une autre classe locale) et les
+**méthodes publiques dont le nom n'apparaît jamais comme appel** nulle
+part (`->methode(`, `::methode(`, ou callable de route Laravel du type
+`[Controleur::class, 'methode']` / `'Controleur@methode'`).
+
+Détection volontairement prudente, pour limiter les faux positifs plutôt
+que de tout signaler :
+- Les **points d'entrée** (contrôleurs HTTP, commandes CLI, jobs de file,
+  listeners, middlewares, form requests) sont exclus entièrement — classe
+  ET méthodes — car invoqués par la configuration du framework (routes,
+  scheduler, conteneur de services), pas par un appel de code littéral
+  facilement détectable par regex.
+- Les **classes de test** (PHPUnit/Pest) sont exclues entièrement : le
+  framework de test invoque les méthodes par réflexion sur leur nom,
+  jamais par un appel littéral dans le code.
+- Les **méthodes magiques** (`__construct`, `__toString`...) et les
+  **hooks connus du framework** (`boot`, `handle`, `rules`...) sont
+  exclus.
+- Les **interfaces et traits** ne sont jamais signalés comme classe
+  morte (une interface implémentée est déjà comptée comme référencée).
+
+**Limite assumée** : comme le reste de l'outil, c'est une heuristique par
+nom (regex), pas un vrai suivi d'exécution ni un système de types. Une
+classe instanciée uniquement via un conteneur d'injection de dépendances
+par son interface, ou une méthode appelée uniquement par un mécanisme
+dynamique (`call_user_func`, `$object->{$variable}()`), peut échapper à
+la détection dans un sens (faux négatif, plus sûr) ou être signalée à
+tort si le nom n'apparaît vraiment nulle part ailleurs de façon
+détectable (faux positif, plus rare avec les exclusions ci-dessus). Un
+résultat ici est une piste à vérifier manuellement, jamais une
+suppression automatique.
+
 ## Vérification des dépendances (CVE réelles)
 
 `VulnerabilityScanner` interroge [OSV.dev](https://osv.dev) avec les
@@ -283,10 +319,8 @@ fonctionnalités ambitieuses demandent plus qu'une session de travail pour
 être faites *sérieusement* plutôt que factices. Plutôt que de simuler ces
 fonctionnalités, elles sont clairement identifiées ici :
 
-- **Détection de code mort inter-fichiers** : `QualityAnalyzer` détecte le
-  code mort local à un fichier, mais pas les méthodes/classes jamais
-  appelées ailleurs dans le projet (nécessite de construire un graphe
-  d'appels).
+- ~~**Détection de code mort inter-fichiers**~~ : implémentée (voir
+  section « Détection de code mort » ci-dessous).
 - **Workers parallèles réels** : le mode CI actuel est séquentiel. Un vrai
   pool de workers (via `pcntl_fork` ou plusieurs processus PHP CLI en
   parallèle avec répartition de la file) est envisagé pour les très gros

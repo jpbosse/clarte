@@ -31,6 +31,7 @@ class AnalysisEngine
     private History $history;
     private GraphBuilder $graphBuilder;
     private RelationshipGraphBuilder $relationshipGraphBuilder;
+    private DeadCodeAnalyzer $deadCodeAnalyzer;
     private HtmlReport $htmlReport;
     private Exporter $exporter;
     private PdfExporter $pdfExporter;
@@ -79,6 +80,7 @@ class AnalysisEngine
         $this->history = new History($config['history']['path'], $config['history']['enabled'], $config['history']['keep_last']);
         $this->graphBuilder = new GraphBuilder();
         $this->relationshipGraphBuilder = new RelationshipGraphBuilder();
+        $this->deadCodeAnalyzer = new DeadCodeAnalyzer();
         $this->htmlReport = new HtmlReport();
         $this->exporter = new Exporter($this->logger);
         $this->pdfExporter = new PdfExporter($this->logger);
@@ -143,6 +145,7 @@ class AnalysisEngine
 
         $relationships = array_map(fn($r) => $r['relationship'] ?? null, $fileResults);
         $relationshipGraph = $this->relationshipGraphBuilder->build($relationships, $fileResults);
+        $deadCode = $this->deadCodeAnalyzer->analyze($relationships);
 
         $graphs = [
             'languages'    => $this->graphBuilder->languageDistribution($statistics),
@@ -150,6 +153,7 @@ class AnalysisEngine
             'scores'       => $this->graphBuilder->scoresBySection($summary),
             'sizes'        => $this->graphBuilder->fileSizeDistribution($statistics),
             'relationships' => $relationshipGraph,
+            'dead_code'    => $deadCode,
         ];
 
         $projectName = basename(rtrim($projectPath, '/'));

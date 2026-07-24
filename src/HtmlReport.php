@@ -58,6 +58,7 @@ class HtmlReport
       <a href="#statistiques" class="nav-link" data-section="statistiques">📁 Statistiques</a>
       <a href="#architecture" class="nav-link" data-section="architecture">🏗 Architecture</a>
       <a href="#organigramme" class="nav-link" data-section="organigramme">🗺 Organigramme</a>
+      <a href="#code-mort" class="nav-link" data-section="code-mort">🧹 Code mort</a>
       <a href="#sécurité" class="nav-link" data-section="sécurité">🔒 Securite</a>
       <a href="#performance" class="nav-link" data-section="performance">⚡ Performance</a>
       <a href="#qualité" class="nav-link" data-section="qualité">🧹 Qualité</a>
@@ -112,6 +113,12 @@ class HtmlReport
       <h1>Organigramme du projet</h1>
       <p class="narrative">Carte des classes du projet, groupées par dossier, reliées par héritage (<code>extends</code>), implémentation (<code>implements</code>) et import (<code>use</code>). La couleur indique le niveau de risque de chaque classe (base sur les problèmes déjà détectés dans les autres sections). Pensé pour une lecture posée plutôt qu'un coup d'œil : cliquez une classe pour isoler ses connexions directes.</p>
       <div id="organigramme-content"></div>
+    </section>
+
+    <section id="code-mort" class="panel">
+      <h1>Code mort (inter-fichiers)</h1>
+      <p class="narrative">Classes jamais référencées ailleurs dans le projet, et méthodes publiques dont le nom n'apparaît jamais comme appel nulle part. Détection volontairement prudente (heuristique par nom, pas un vrai suivi d'exécution) : les points d'entrée (contrôleurs, commandes, jobs...) et les classes de test sont exclus, car invoqués par le framework plutôt que par du code visible. Un résultat ici mérite une vérification manuelle avant suppression — jamais une suppression automatique.</p>
+      <div id="code-mort-content"></div>
     </section>
 
     <section id="sécurité" class="panel">
@@ -496,6 +503,14 @@ canvas { max-width: 100%; }
 .og-node.og-dim { opacity: 0.25; }
 .og-node.og-search-hit { outline: 2px solid #eab308; }
 .og-node.og-search-miss { opacity: 0.2; }
+
+/* ---- Code mort ---- */
+.cm-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.cm-item { display: flex; align-items: center; gap: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 13px; flex-wrap: wrap; }
+.cm-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 2px 8px; border-radius: 8px; }
+.cm-badge-class { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.cm-badge-method { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.cm-file { color: var(--text-muted); font-size: 12px; margin-left: auto; }
 
 /* ---- Impression / export PDF ----
    Le rapport est une SPA à onglets (un seul .panel visible à la fois).
@@ -1213,6 +1228,44 @@ function renderOrganigramme() {
   requestAnimationFrame(drawEdges);
 }
 
+// ---- Code mort (inter-fichiers) ----
+function renderCodeMort() {
+  const dead = REPORT_DATA.graphs.dead_code;
+  const container = document.getElementById('code-mort-content');
+  if (!dead) {
+    container.innerHTML = '<p style="color:var(--text-muted)">Donnees indisponibles.</p>';
+    return;
+  }
+
+  const totalClasses = dead.unused_classes.length;
+  const totalMethods = dead.unused_methods.length;
+
+  if (totalClasses === 0 && totalMethods === 0) {
+    container.innerHTML = `<p class="issue-line">🟢 Aucune classe ni méthode publique manifestement inutilisée détectée (dans les limites de cette heuristique — voir l'avertissement ci-dessus).</p>`;
+    return;
+  }
+
+  let html = '';
+
+  if (totalClasses > 0) {
+    html += `<h3>Classes jamais référencées ailleurs (${totalClasses})</h3><div class="cm-list">`;
+    dead.unused_classes.forEach(c => {
+      html += `<div class="cm-item"><span class="cm-badge cm-badge-class">classe</span><strong>${esc(c.class)}</strong><span class="cm-file">${esc(c.file)}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (totalMethods > 0) {
+    html += `<h3>Méthodes publiques jamais appelées (${totalMethods})</h3><div class="cm-list">`;
+    dead.unused_methods.forEach(m => {
+      html += `<div class="cm-item"><span class="cm-badge cm-badge-method">méthode</span><strong>${esc(m.class)}::${esc(m.method)}()</strong><span class="cm-file">${esc(m.file)}:${m.line}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
 // ---- Fichiers (accordeon) ----
 let currentFilter = 'all';
 function renderFiles(searchTerm = '') {
@@ -1417,6 +1470,7 @@ window.addEventListener('resize', () => safeRun('graphiques (resize)', renderCha
 safeRun('statistiques', renderStats);
 safeRun('catégorie architecture', () => renderCategory('architecture', 'architecture-content'));
 safeRun('organigramme', renderOrganigramme);
+safeRun('code mort', renderCodeMort);
 safeRun('catégorie sécurité', () => renderCategory('security', 'sécurité-content'));
 safeRun('catégorie performance', () => renderCategory('performance', 'performance-content'));
 safeRun('catégorie qualité', () => renderCategory('quality', 'qualité-content'));

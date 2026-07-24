@@ -21,7 +21,7 @@ class RelationshipGraphBuilder
      */
     public function build(array $relationships, array $fileResults): array
     {
-        $relationships = array_filter($relationships);
+        $relationships = array_filter($relationships, fn($r) => $r !== null && $r['fqcn'] !== null);
         if (empty($relationships)) {
             return ['nodes' => [], 'edges' => [], 'groups' => [], 'stats' => ['total_classes' => 0, 'entry_points' => 0]];
         }
